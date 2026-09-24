@@ -31,7 +31,6 @@ public final class MainActivity extends Activity {
     private LinearLayout transport;
     private Symbol playGlyph;
     private TextView speedButton;
-    private boolean fillVideo=false;
     private String pendingArtworkId;
     private final Handler handler=new Handler(Looper.getMainLooper());
     private final ExecutorService scanner=Executors.newSingleThreadExecutor();
@@ -54,6 +53,7 @@ public final class MainActivity extends Activity {
     private long lastBack;
     private final Player.Listener listener=new Player.Listener(){
         @Override public void onEvents(Player p, Player.Events events){updatePlayback();}
+        @Override public void onVideoSizeChanged(VideoSize size){syncVideoOrientation(size); }
         @Override public void onMediaItemTransition(MediaItem item,int reason){if(full)renderPlayer();else updateMini();}
         @Override public void onPlayerError(PlaybackException error){new AlertDialog.Builder(MainActivity.this).setTitle("This file couldn’t play")
             .setMessage("The file may have moved, access may have changed, or this phone may not support its audio/video codec.\n\n"+error.getErrorCodeName())
@@ -116,13 +116,19 @@ public final class MainActivity extends Activity {
         content=vertical();content.setPadding(dp(18),0,dp(18),0);root.addView(content,new LinearLayout.LayoutParams(-1,0,1));
         listView=new ListView(this);listView.setDivider(null);listView.setVerticalScrollBarEnabled(false);listView.setClipToPadding(false);listView.setPadding(0,0,0,dp(12));listView.setAdapter(new LibraryAdapter());content.addView(listView,new LinearLayout.LayoutParams(-1,0,1));
         mini=vertical();mini.setPadding(dp(18),dp(4),dp(18),dp(4));root.addView(mini);
-        LinearLayout tabs=horizontal();tabs.setPadding(dp(14),dp(7),dp(14),dp(8));tabs.setBackgroundColor(surface);
-        for(String tab:new String[]{"Videos","Music","Saved"}){boolean selected=section.equals(tab);LinearLayout cell=vertical();cell.setGravity(Gravity.CENTER);cell.setPadding(0,dp(7),0,dp(7));if(selected)cell.setBackground(shape(card,18));int color=selected?accent:muted;cell.addView(new Symbol(this,tab.equals("Videos")?"video":tab.equals("Music")?"music":"heart",color),new LinearLayout.LayoutParams(dp(23),dp(23)));gap(cell,5);cell.addView(label(tab,11,color,selected));cell.setContentDescription(tab);cell.setOnClickListener(v->{section=tab;folder=null;collection=null;search="";buildLibrary();});addWeighted(tabs,cell);}root.addView(tabs);renderRows();updateMini();
+        LinearLayout tabs=horizontal();tabs.setGravity(Gravity.CENTER);tabs.setPadding(dp(12),dp(5),dp(12),dp(5));tabs.setBackgroundColor(surface);root.addView(tabs,new LinearLayout.LayoutParams(-1,dp(76)));
+        for(String tab:new String[]{"Videos","Music","Saved"}){
+            boolean selected=section.equals(tab);int color=selected?accent:muted;
+            LinearLayout cell=vertical();cell.setGravity(Gravity.CENTER);cell.setContentDescription(tab);cell.setFocusable(true);cell.setSelected(selected);
+            FrameLayout iconBox=new FrameLayout(this);if(selected)iconBox.setBackground(shape(card,14));iconBox.addView(new Symbol(this,tab.equals("Videos")?"video":tab.equals("Music")?"music":"heart",color),new FrameLayout.LayoutParams(dp(22),dp(22),Gravity.CENTER));cell.addView(iconBox,new LinearLayout.LayoutParams(dp(56),dp(30)));
+            TextView caption=label(tab,12,color,selected);caption.setGravity(Gravity.CENTER);caption.setIncludeFontPadding(false);LinearLayout.LayoutParams captionParams=new LinearLayout.LayoutParams(-1,dp(22));captionParams.topMargin=dp(3);cell.addView(caption,captionParams);
+            tabs.addView(cell,new LinearLayout.LayoutParams(0,-1,1));cell.setOnClickListener(v->{section=tab;folder=null;collection=null;search="";buildLibrary();});
+        }
+        renderRows();updateMini();
     }
-
     private void libraryMenu(){new AlertDialog.Builder(this).setTitle("Your library").setItems(new String[]{"Refresh media","Choose an additional folder","Manage media permissions","About Radha Music"},(d,w)->{
         if(w==0)scan();if(w==1){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);startActivityForResult(i,21);}if(w==2)startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+getPackageName())));
-        if(w==3)new AlertDialog.Builder(this).setTitle("Radha Music · 1.1").setMessage("Created, designed and developed by Diwash Bhatta.\n\nYour music. Your movies. On your device.\n\nOriginal files, no conversion or upload. Music is ordered by Android’s date added. Videos stay in their source folders.\n\nSwipe left side vertically for brightness, right side for volume. Double tap either side to seek 6 seconds. Background playback is opt-in.\n\nCodecs and volume boost depend on your device. Boost can distort loud recordings.\n\nBuilt with AndroidX Media3 (Apache 2.0). No ads or Internet permission.").setPositiveButton("Close",null).show();}).show();}
+        if(w==3)new AlertDialog.Builder(this).setTitle("Radha Music · 1.2").setMessage("Created, designed and developed by Diwash Bhatta.\n\nYour music. Your movies. On your device.\n\nOriginal files, no conversion or upload. Music is ordered by Android’s date added. Videos stay in their source folders.\n\nSwipe left side vertically for brightness, right side for volume. Double tap either side to seek 6 seconds. Background playback is opt-in.\n\nCodecs and volume boost depend on your device. Boost can distort loud recordings.\n\nBuilt with AndroidX Media3 (Apache 2.0). No ads or Internet permission.").setPositiveButton("Close",null).show();}).show();}
     private void renderRows(){if(full||listView==null)return;rows.clear();visible=new ArrayList<>();
         if(section.equals("Saved")&&collection==null){rows.add("Saved for later");rows.add(new CollectionRow("Favorites",library.favorites.size()));for(String name:library.playlists.keySet())rows.add(new CollectionRow(name,library.playlists.get(name).size()));rows.add(new ActionRow("+  Create playlist / album",()->createPlaylist(null)));}
         else {
@@ -188,7 +194,7 @@ public final class MainActivity extends Activity {
         if(player==null||player.getCurrentMediaItem()==null)return;boolean wasLocked=full&&locked;full=true;locked=wasLocked;controlsVisible=!locked;videoViewDetach();if(disc!=null){disc.setPlaying(false);disc=null;}getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         boolean video=currentVideo(), landscape=getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE;
         root=vertical();root.setBackgroundColor(Color.BLACK);setContentView(root);playerFrame=new FrameLayout(this);root.addView(playerFrame,new LinearLayout.LayoutParams(-1,-1));
-        if(video){videoView=new PlayerView(this);videoView.setUseController(false);videoView.setPlayer(player);videoView.setKeepContentOnPlayerReset(true);videoView.setResizeMode(fillVideo?AspectRatioFrameLayout.RESIZE_MODE_ZOOM:AspectRatioFrameLayout.RESIZE_MODE_FIT);playerFrame.addView(videoView,new FrameLayout.LayoutParams(-1,-1));}
+        if(video){videoView=new PlayerView(this);videoView.setUseController(false);videoView.setPlayer(player);videoView.setKeepContentOnPlayerReset(true);videoView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);playerFrame.addView(videoView,new FrameLayout.LayoutParams(-1,-1));}
         else {playerFrame.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{0xFF342B47,0xFF111018}));LinearLayout album=vertical();album.setGravity(Gravity.CENTER);FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(landscape?getResources().getDisplayMetrics().widthPixels/2:-1,-1,Gravity.LEFT);ap.topMargin=dp(75);ap.bottomMargin=landscape?dp(20):dp(310);playerFrame.addView(album,ap);disc=new DiscView(this);album.addView(disc,new LinearLayout.LayoutParams(-1,0,1));TextView hint=text("Swipe left for next · right for previous",11,0xFFBDB1CD);hint.setGravity(Gravity.CENTER);album.addView(hint);String id=player.getCurrentMediaItem().mediaId;DiscView target=disc;artwork.load(id,b->{if(!isDestroyed()&&disc==target)target.setArtwork(b);});disc.setPlaying(player.isPlaying());}
         View gestures=new View(this);playerFrame.addView(gestures,new FrameLayout.LayoutParams(-1,-1));attachGestures(gestures);
         playerHeader=horizontal();playerHeader.setPadding(dp(12),dp(12),dp(12),dp(18));if(video)playerHeader.setBackground(fade(true));playerHeader.addView(iconButton("back",Color.WHITE,()->leavePlayer()));LinearLayout heading=vertical();nowTitle=label(video?currentTitle():"NOW PLAYING",video?16:12,Color.WHITE,true);nowTitle.setMaxLines(1);nowTitle.setEllipsize(TextUtils.TruncateAt.END);heading.addView(nowTitle);nowSubtitle=text("",11,0xFFCDC6D7);heading.addView(nowSubtitle);playerHeader.addView(heading,new LinearLayout.LayoutParams(0,-2,1));if(video)playerHeader.addView(iconButton("rotate",Color.WHITE,()->{setRequestedOrientation(landscape?android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);}));else playerHeader.addView(iconButton("more",Color.WHITE,()->playerMenu()));playerFrame.addView(playerHeader,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
@@ -199,7 +205,7 @@ public final class MainActivity extends Activity {
         timeLabel=text("",11,0xFFDDD4E6);timeLabel.setPadding(dp(8),0,dp(8),0);controls.addView(timeLabel);
         progress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onStartTrackingTouch(SeekBar s){seeking=true;handler.removeCallbacks(hideControls);}public void onStopTrackingTouch(SeekBar s){if(player.getDuration()>0)player.seekTo(player.getDuration()*s.getProgress()/1000);seeking=false;scheduleHide();}public void onProgressChanged(SeekBar s,int p,boolean user){if(user&&player.getDuration()>0)timeLabel.setText(format(player.getDuration()*p/1000)+"  /  "+format(player.getDuration()));}});
         transport=horizontal();transport.setGravity(Gravity.CENTER);addWeighted(transport,transportIcon("previous","Previous",26,()->previous()));addWeighted(transport,transportIcon("rewind","Back 6 seconds",28,()->seek(-6000)));addWeighted(transport,transportIcon(player.isPlaying()?"pause":"play","Play or pause",44,()->togglePlay()));addWeighted(transport,transportIcon("forward","Forward 6 seconds",28,()->seek(6000)));addWeighted(transport,transportIcon("skip","Next",26,()->next()));
-        if(video){FrameLayout.LayoutParams tp=new FrameLayout.LayoutParams(dp(320),dp(72),Gravity.CENTER);playerFrame.addView(transport,tp);}else {LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(-1,dp(72));controls.addView(transport,tp);}
+        LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(-1,dp(video?60:72));controls.addView(transport,tp);
         HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);scroll.setFillViewport(true);LinearLayout tools=horizontal();tools.setGravity(Gravity.CENTER);scroll.addView(tools);controls.addView(scroll);
         backgroundButton=playerAction("",()->toggleBackground());backgroundButton.setTextSize(12);tools.addView(backgroundButton);
         speedButton=playerAction("1×",()->speedDialog());tools.addView(speedButton);tools.addView(iconButton("queue",Color.WHITE,()->queueDialog()));tools.addView(iconButton("more",Color.WHITE,()->playerMenu()));
@@ -207,9 +213,19 @@ public final class MainActivity extends Activity {
         else {TextView credit=text("Created, designed and developed by Diwash Bhatta",10,0xFFA99CB9);credit.setGravity(Gravity.CENTER);credit.setPadding(0,dp(8),0,dp(6));controls.addView(credit);}
         feedback=label("",16,Color.WHITE,true);feedback.setGravity(Gravity.CENTER);feedback.setPadding(dp(18),dp(12),dp(18),dp(12));feedback.setBackground(shape(0xDD24202E,16));feedback.setVisibility(View.GONE);playerFrame.addView(feedback,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));
         lockButton=text(locked?"Unlock":"Lock",12,Color.WHITE);lockButton.setGravity(Gravity.CENTER);lockButton.setPadding(dp(10),dp(12),dp(10),dp(12));lockButton.setContentDescription("Lock or unlock controls");lockButton.setOnClickListener(v->{locked=!locked;controlsVisible=!locked;lockButton.setText(locked?"Unlock":"Lock");applyControls();scheduleHide();});FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(dp(64),dp(48),Gravity.RIGHT|Gravity.TOP);lp.rightMargin=dp(8);lp.topMargin=dp(10);playerFrame.addView(lockButton,lp);
-        insetRoot();updatePlayback();applyControls();scheduleHide();
+        insetRoot();updatePlayback();applyControls();scheduleHide();if(video&&player.isPlaying())syncVideoOrientation(player.getVideoSize());
     }
-    private void toggleFullscreen(){fillVideo=!fillVideo;if(videoView!=null)videoView.setResizeMode(fillVideo?AspectRatioFrameLayout.RESIZE_MODE_ZOOM:AspectRatioFrameLayout.RESIZE_MODE_FIT);if(fillVideo)setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);immersive();toast(fillVideo?"Fill screen · edges may be cropped":"Fit · entire original frame");scheduleHide();}
+    private void syncVideoOrientation(VideoSize size){
+        if(!full||!currentVideo())return;
+        int kind=LibraryRules.videoOrientation(size.width,size.height,size.pixelWidthHeightRatio);if(kind==0)return;
+        int desired=kind==1?android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        if(getRequestedOrientation()!=desired)setRequestedOrientation(desired);
+    }
+    private void toggleFullscreen(){
+        if(videoView!=null)videoView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
+        syncVideoOrientation(player.getVideoSize());immersive();controlsVisible=false;applyControls();
+        toast("Fullscreen · original aspect ratio");
+    }
     private void speedDialog(){handler.removeCallbacks(hideControls);float[] speeds={.2f,.3f,.5f,.8f,1f,1.25f,1.5f,2f,3f};String[] names={"0.2×","0.3×","0.5×","0.8×","1× · Normal","1.25×","1.5×","2×","3×"};int selected=4;for(int i=0;i<speeds.length;i++)if(Math.abs(player.getPlaybackParameters().speed-speeds[i])<.01)selected=i;AlertDialog d=new AlertDialog.Builder(this).setTitle("Playback speed").setSingleChoiceItems(names,selected,(a,w)->{player.setPlaybackSpeed(speeds[w]);updatePlayback();a.dismiss();}).setNegativeButton("Close",null).create();d.setOnDismissListener(a->scheduleHide());d.show();}
 
     private TextView playerAction(String name,Runnable action){TextView t=text(name,13,Color.WHITE);t.setGravity(Gravity.CENTER);t.setMinHeight(dp(48));t.setPadding(dp(12),dp(10),dp(12),dp(10));t.setOnClickListener(v->action.run());return t;}
