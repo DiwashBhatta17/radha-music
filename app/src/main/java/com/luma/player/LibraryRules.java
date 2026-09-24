@@ -14,9 +14,15 @@ public final class LibraryRules {
         return s.substring(0,first).toUpperCase(Locale.ROOT)+s.substring(first);
     }
     public static boolean showMusic(String name,String folder) {
-        String n=name.toLowerCase(Locale.ROOT), p=folder.toLowerCase(Locale.ROOT).replace('\\','/');
-        for(String ext:new String[]{".m4a",".ogg",".aac",".acc",".amr",".opus",".3ga"})if(n.endsWith(ext))return false;
-        return !p.contains("recording")&&!p.contains("recorder")&&!p.contains("voice notes")&&!p.contains("voice messages")&&!p.contains("call records");
+        // An audio extension identifies a format, not whether the file is a song.
+        String p=folder.toLowerCase(Locale.ROOT).replace('\\','/');
+        for(String segment:p.split("/")) {
+            String normalized=segment.replace('_',' ').replace('-',' ').trim();
+            if(normalized.matches("recordings?|call recordings?|call records?|call rec|sound recorder|voice recorder|voice recordings?|voice notes|voice messages|whatsapp voice notes|recorder"))return false;
+        }
+        return true;
     }
+    /** 0: unknown, 1: portrait/square, 2: landscape, accounting for non-square pixels. */
+    public static int videoOrientation(int width,int height,float pixelRatio){if(width<=0||height<=0)return 0;return width*(pixelRatio>0?pixelRatio:1)>height?2:1;}
     public static String mediaTitle(String name){int dot=name.lastIndexOf('.');return dot>0?name.substring(0,dot):name;}
 }
