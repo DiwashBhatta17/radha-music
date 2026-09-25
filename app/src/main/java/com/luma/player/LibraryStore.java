@@ -50,18 +50,24 @@ public final class LibraryStore {
         }catch(Exception ignored){}
     }
     private void query(Uri uri, boolean video, List<MediaEntry> out) {
+        query(uri,video,out,!video&&Build.VERSION.SDK_INT>=31);
+    }
+    private void query(Uri uri,boolean video,List<MediaEntry> out,boolean recordingColumn) {
         String path=Build.VERSION.SDK_INT>=29 ? "relative_path" : "_data";
         String[] cols=video?new String[]{"_id","_display_name",path,"duration","date_added"}:new String[]{"_id","_display_name",path,"duration","date_added","artist"};
+        if(recordingColumn){cols=Arrays.copyOf(cols,cols.length+1);cols[cols.length-1]="is_recording";}
         try(Cursor c=context.getContentResolver().query(uri,cols,null,null,"date_added DESC, _id DESC")) {
             if(c==null)return;
             while(c.moveToNext()) {
+                if(recordingColumn&&c.getInt(6)!=0)continue;
                 String folder=c.getString(2); if(folder==null)folder="Unknown folder";
                 if(Build.VERSION.SDK_INT<29){int p=folder.lastIndexOf('/');folder=p>=0?folder.substring(0,p+1):folder;}
                 String artist=video?"":c.getString(5); if(artist==null||artist.equals("<unknown>"))artist="Unknown artist";
                 String name=c.getString(1);if(name==null)name="Untitled";
                 out.add(new MediaEntry(ContentUris.withAppendedId(uri,c.getLong(0)).toString(),name,folder,artist,video,c.getLong(3),c.getLong(4)));
             }
-        } catch(SecurityException ignored) { /* A denied category remains empty; other category can still load. */ }
+        } catch(IllegalArgumentException unsupportedColumn){if(recordingColumn)query(uri,video,out,false);else throw unsupportedColumn;}
+        catch(SecurityException ignored) { /* A denied category remains empty; other category can still load. */ }
     }
     public void save() {
         JSONObject o=new JSONObject();try{for(Map.Entry<String,List<MediaEntry>> e:playlists.entrySet()){JSONArray a=new JSONArray();for(MediaEntry m:e.getValue())a.put(m.json());o.put(e.getKey(),a);}}catch(Exception ignored){}
