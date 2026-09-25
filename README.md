@@ -2,15 +2,23 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
-## Version 1.1 update
+## Version 1.2 update
+
+- Songs are included regardless of extension, including M4A, OGG, AAC and OPUS. Only Android-identified recordings (Android 12+) and recognized recorder/call-recording/voice-note folders are filtered out. On older Android versions and manually added folders, filtering uses the folder name. No files are deleted.
+- Videos, Music and Saved now use three equally sized, consistently aligned navigation items.
+- Video transport icons sit at the bottom, leaving the center of the picture clear.
+- Video orientation follows its displayed dimensions: portrait stays portrait and landscape stays landscape. Fullscreen hides controls and system bars while retaining the complete original aspect ratio. It never forces portrait video into landscape or zoom-crops the picture.
+- Existing favorites, playlists, custom album images and unplayed-video history are retained when installed as an update with the same signing key.
+
+## Library and player design
 
 - Redesigned light/dark library, compact cards and bottom navigation.
 - Video folders sort A–Z by displayed folder name, with an uppercase first letter and no storage path displayed.
 - Red NEW badges identify unplayed videos. A red number on each folder counts them. Playback history persists after restarting the app; tracking begins with this version, since version 1.0 did not record it.
 - Immersive fullscreen hides Android's system bars (swipe from an edge to reveal them temporarily). Video controls are transparent icons with fading overlays, and hide automatically while playing.
-- The four-corner fullscreen button enters landscape and fills the display; different video/screen aspect ratios can crop the edges. Tap it again for Fit to see the complete original frame. This does not convert or change the original file.
+- The four-corner fullscreen button keeps the complete original frame and the video's natural orientation. Black bars can appear when the screen and video aspect ratios differ; the file is never stretched or cropped.
 - Speed choices: 0.2×, 0.3×, 0.5×, 0.8×, 1×, 1.25×, 1.5×, 2× and 3×.
-- Music hides M4A, OGG, AAC/ACC, AMR, OPUS and 3GA files and recording/voice-note folders. This is a library filter; no files are deleted. Songs in those formats are also hidden, as requested.
+- All audio formats remain eligible for the Music list; recording detection is based on Android metadata and recognized recording folders, not file extension.
 - Embedded album art appears in song rows and on a circular, grooved disc that rotates only during playback.
 - A song's three-dot menu, or the music player's More menu, offers **Add / change album image**. Images are stored privately per song without modifying your audio file. The list menu can restore the original image.
 - Swipe **left** on the music disc/background for the next track, **right** for the previous track.
@@ -20,7 +28,7 @@ An offline Android music and video player. Supports Android 8.0 (API 26) and new
 
 ## Install the APK
 
-1. Transfer **Radha-Music.apk** to your Android phone and open it from Files.
+1. Transfer **Radha-Music-v1.2.apk** to your Android phone and open it from Files.
 2. If asked, allow that file manager to install unknown apps, then install.
 3. Open **Radha Music** and allow music/audio and video access. Choose all videos if you want your complete library.
 4. Open Videos for source folders, or Music for songs with the newest additions first.
@@ -36,7 +44,7 @@ This is a development APK for testing on your phone. It has not been device-test
 - **Gestures:** vertically swipe the left side of the playback area for brightness; right side for device volume. Double tap left/right to go back/forward six seconds.
 - **Screen lock:** Lock blocks on-screen playback gestures and controls until Unlock is tapped. It does not disable Android’s power or system navigation buttons.
 - **Volume boost:** More → Volume & boost, from 100% to 200% amplitude (up to approximately +6 dB). Hardware/output support varies and boost can distort audio.
-- **Background:** disabled when the playback service starts. Tap **Background: off** to enable playback outside the app and with the screen off. This applies to music and video, with Android media notification controls. A new playback service starts with background playback off again.
+- **Background:** disabled when the playback service starts. Tap **BG off** to enable playback outside the app and with the screen off. This applies to music and video, with Android media notification controls. A new playback service starts with background playback off again.
 - **Playback order:** More → Playback order / repeat → stop after current, auto-next, repeat item, or repeat queue. Playing from a video folder creates a queue from that folder. Auto-next is on by default.
 - **Saved:** favorites and named playlists/albums for music, videos, or a mix. These are virtual collections; original files are not moved. Long press a saved collection to rename or delete it.
 - **Play next:** open a media item’s three-dot menu while browsing. This inserts that item immediately after the current item. “Add to queue” appends it to the end. Browse the library while playback continues inside the app.
