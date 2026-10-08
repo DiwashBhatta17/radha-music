@@ -2,10 +2,31 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
-## Version 1.2 update
+## Version 1.3 — online listening and the approved design
+
+The approved Radha design is now implemented in the Android app: charcoal/ivory surfaces, coral accents, the coral **r** logo, landscape mix cards, a grooved black disc with album artwork in its center, and five evenly spaced destinations: **Online · Watch · Music · Videos · Saved**. The app follows the device's light/dark theme.
+
+### Online music and Watch
+
+- Search music by artist or title. Press the keyboard's Search button to submit. Search is separate from the local library.
+- Online discovery starts with your chosen artists, languages and moods. **Listening preferences** changes these seeds or clears listening history.
+- After 30 seconds of online playback, the artist contributes to the local taste profile. The most-listened artist helps seed future recommendations. These are simple Radha recommendations, not YouTube's personalized recommendation model.
+- **Your daily mix**, **Late night**, and **Acoustic days** open searches tailored to those seeds. Mix artwork is decorative; it does not imply a preexisting playlist or fabricated track count.
+- **Watch** searches online videos and plays the selected video with its original aspect ratio. Available progressive video streams up to 1080p are selected without transcoding; quality depends on what YouTube makes available.
+- Search supports additional pages. Every result offers play-next, add-to-queue, favorites and playlists. Saved collections can mix local and online items.
+- Online audio uses the existing player, notification/media controls, queue, repeat, shuffle and opt-in background mode. Tap **Background · Off** to enable screen-off/background listening.
+- Stable YouTube IDs are saved in collections. Temporary playback links are resolved when Media3 loads an item, including queued tracks, and cached in memory for at most ten minutes. Retry refreshes the link after a playback error.
+- Artwork has a bounded memory cache. Audio/video is streamed, not downloaded to the device for offline playback.
+- Connection failures show retry options; playback failures also offer **Open YouTube**. Live streams, paid/restricted content, YouTube sign-in, account-library imports, synced lyrics, and automatic YouTube-history import are not implemented.
+
+Online extraction uses **NewPipe Extractor v0.26.5**. It is unofficial and can stop working when the upstream service changes. Online browsing/playback sends requests to YouTube/Google media servers; listening history and preferences stay in app-private storage on your device. A Google account is not required or collected. The app is not affiliated with YouTube.
+
+The app and full corresponding source are distributed under **GPL-3.0-or-later**. See [LICENSE](LICENSE) and [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). License texts are also included in the APK assets.
+
+## Previous update: version 1.2
 
 - Songs are included regardless of extension, including M4A, OGG, AAC and OPUS. Only Android-identified recordings (Android 12+) and recognized recorder/call-recording/voice-note folders are filtered out. On older Android versions and manually added folders, filtering uses the folder name. No files are deleted.
-- Videos, Music and Saved now use three equally sized, consistently aligned navigation items.
+- The local Videos, Music and Saved sections retain consistent navigation alignment within the new five-tab layout.
 - Video transport icons sit at the bottom, leaving the center of the picture clear.
 - Video orientation follows its displayed dimensions: portrait stays portrait and landscape stays landscape. Fullscreen hides controls and system bars while retaining the complete original aspect ratio. It never forces portrait video into landscape or zoom-crops the picture.
 - Existing favorites, playlists, custom album images and unplayed-video history are retained when installed as an update with the same signing key.
@@ -24,11 +45,11 @@ Created, designed and developed by **Diwash Bhatta**.
 - Swipe **left** on the music disc/background for the next track, **right** for the previous track.
 - Creator credit appears in About and the music player.
 
-An offline Android music and video player. Supports Android 8.0 (API 26) and newer. Built with Java and AndroidX Media3. No ads, account, server, or Internet permission.
+An Android local and online music and video player. Supports Android 8.0 (API 26) and newer. Built with Java and AndroidX Media3. No account is required. Local media remains playable offline; online sections require Internet access.
 
 ## Install the APK
 
-1. Transfer **Radha-Music-v1.2.apk** to your Android phone and open it from Files.
+1. Transfer **Radha-Music-v1.3.apk** to your Android phone and open it from Files.
 2. If asked, allow that file manager to install unknown apps, then install.
 3. Open **Radha Music** and allow music/audio and video access. Choose all videos if you want your complete library.
 4. Open Videos for source folders, or Music for songs with the newest additions first.
@@ -44,7 +65,7 @@ This is a development APK for testing on your phone. It has not been device-test
 - **Gestures:** vertically swipe the left side of the playback area for brightness; right side for device volume. Double tap left/right to go back/forward six seconds.
 - **Screen lock:** Lock blocks on-screen playback gestures and controls until Unlock is tapped. It does not disable Android’s power or system navigation buttons.
 - **Volume boost:** More → Volume & boost, from 100% to 200% amplitude (up to approximately +6 dB). Hardware/output support varies and boost can distort audio.
-- **Background:** disabled when the playback service starts. Tap **BG off** to enable playback outside the app and with the screen off. This applies to music and video, with Android media notification controls. A new playback service starts with background playback off again.
+- **Background:** disabled when the playback service starts. Tap **Background · Off** to enable playback outside the app and with the screen off. This applies to music and video, with Android media notification controls. A new playback service starts with background playback off again.
 - **Playback order:** More → Playback order / repeat → stop after current, auto-next, repeat item, or repeat queue. Playing from a video folder creates a queue from that folder. Auto-next is on by default.
 - **Saved:** favorites and named playlists/albums for music, videos, or a mix. These are virtual collections; original files are not moved. Long press a saved collection to rename or delete it.
 - **Play next:** open a media item’s three-dot menu while browsing. This inserts that item immediately after the current item. “Add to queue” appends it to the end. Browse the library while playback continues inside the app.
@@ -58,7 +79,7 @@ Open this folder in Android Studio, let Gradle sync, and choose **Build APK(s)**
 .\gradlew.bat assembleDebug
 ```
 
-The output is `app/build/outputs/apk/debug/app-debug.apk`. Gradle 8.11.1, Android Gradle Plugin 8.9.1, Media3 1.8.0. The Gradle wrapper downloads its distribution and dependencies on the first build. The working project uses `.local/debug.keystore` when present; otherwise Android's default debug key is used. Preserve the existing signing key for updates. The packaged source excludes local SDK paths, caches, and keys. A build from a different key cannot update an installed app signed with the previous key.
+The output is `app/build/outputs/apk/debug/app-debug.apk`. Gradle 8.11.1, Android Gradle Plugin 8.9.1, Media3 1.8.0, NewPipe Extractor v0.26.5, and desugar_jdk_libs 2.1.5. Extractor dependencies are pinned and resolved through JitPack. The Gradle wrapper downloads its distribution and dependencies on the first build. The working project uses `.local/debug.keystore` when present; otherwise Android's default debug key is used. Preserve the existing signing key for updates. The packaged source excludes local SDK paths, caches, and keys. A build from a different key cannot update an installed app signed with the previous key.
 
 ## Practical limits
 
@@ -70,3 +91,7 @@ The output is `app/build/outputs/apk/debug/app-debug.apk`. Gradle 8.11.1, Androi
 - No YouTube, Instagram, or TikTok downloading is included.
 
 AndroidX Media3 is licensed under Apache 2.0: https://github.com/androidx/media
+
+## Validation
+
+Run `./gradlew testDebugUnitTest lintDebug assembleDebug` (Windows: `gradlew.bat`). Unit tests cover local music filtering, video orientation, seek and queue behavior, online ID validation, and taste ranking. Live online smoke checks require a network connection and are described in BUILD-NOTES.md. No emulator is required for building; playback, gestures and theme/layout behavior should be checked on a phone.
