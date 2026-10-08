@@ -2,6 +2,15 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
+## Version 1.3.1 — online search recovery and diagnostics
+
+- If music-specific search fails or returns no playable results, the app tries regular YouTube video search and plays those results as audio in Online. Watch remains video playback.
+- Search results display their actual result count and whether the fallback was used. Pagination retains the selected search source.
+- Errors now distinguish DNS lookup, timeout, TLS, blocked access, and Android component compatibility failures. **Error details → Copy error** provides a bounded diagnostic report with URLs and common credential fields redacted.
+- A 90-second search deadline prevents an indefinite loading state. Android component linkage failures are handled instead of disappearing inside a background task.
+- Android grants the declared INTERNET permission at installation; no runtime permission popup is expected. Device-specific Wi-Fi/mobile-data restrictions can still block an app.
+- The original phone failure has not been reproduced on hardware. This update improves recovery and exposes the evidence needed if it persists; a successful desktop network check does not establish Android runtime behavior.
+
 ## Version 1.3 — online listening and the approved design
 
 The approved Radha design is now implemented in the Android app: charcoal/ivory surfaces, coral accents, the coral **r** logo, landscape mix cards, a grooved black disc with album artwork in its center, and five evenly spaced destinations: **Online · Watch · Music · Videos · Saved**. The app follows the device's light/dark theme.
@@ -49,7 +58,7 @@ An Android local and online music and video player. Supports Android 8.0 (API 26
 
 ## Install the APK
 
-1. Transfer **Radha-Music-v1.3.apk** to your Android phone and open it from Files.
+1. Transfer **Radha-Music-v1.3.1.apk** to your Android phone and open it from Files.
 2. If asked, allow that file manager to install unknown apps, then install.
 3. Open **Radha Music** and allow music/audio and video access. Choose all videos if you want your complete library.
 4. Open Videos for source folders, or Music for songs with the newest additions first.

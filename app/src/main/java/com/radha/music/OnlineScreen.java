@@ -49,11 +49,21 @@ public final class OnlineScreen extends LinearLayout {
         OnlineClient.Results previous=result;
         request=worker.submit(()->{try{
             OnlineClient.Results found=append?OnlineClient.more(previous):OnlineClient.search(q,watch);List<MediaEntry> batch=new ArrayList<>();for(OnlineClient.Track t:found.tracks())batch.add(new MediaEntry(OnlineRules.mediaId(t.url(),watch),t.name(),"YouTube",t.artist(),watch,t.seconds()*1000,System.currentTimeMillis()/1000,t.image()));
-            post(()->{if(closed||token!=generation)return;busy=false;body.removeView(status);result=found;Set<String> seen=new HashSet<>();for(MediaEntry e:tracks)seen.add(e.id);for(MediaEntry e:batch)if(seen.add(e.id)){tracks.add(e);body.addView(trackRow(e));}store.remember(batch);
+            post(()->{if(closed||token!=generation)return;busy=false;status.setText(batch.size()+" results · "+(found.fallback()?"YouTube search":"YouTube"));result=found;Set<String> seen=new HashSet<>();for(MediaEntry e:tracks)seen.add(e.id);for(MediaEntry e:batch)if(seen.add(e.id)){tracks.add(e);body.addView(trackRow(e));}store.remember(batch);
                 if(tracks.isEmpty()){body.addView(text("No results. Try a different artist or title.",15,muted,false));}
                 if(OnlineClient.hasMore(result)){TextView more=action("Load more",()->{if(busy)return;load(q,true,home);});more.setOnClickListener(v->{if(busy)return;body.removeView(more);load(q,true,home);});body.addView(more);}
             });
-        }catch(Exception error){post(()->{if(closed||token!=generation)return;busy=false;status.setText("Couldn’t connect to YouTube. Check your connection or try again later.");body.addView(action("Retry",()->{body.removeView(status);if(append)load(q,true,home);else if(home)showHome();else search(q);}));});}});
+        }catch(Exception|LinkageError error){post(()->{if(closed||token!=generation)return;busy=false;failed(status,error,q,home);});}});
+        postDelayed(()->{if(closed||!busy||token!=generation)return;busy=false;generation++;request.cancel(true);failed(status,new java.net.SocketTimeoutException("Search exceeded 90 seconds"),q,home);},90000);
+    }
+    private void failed(TextView status,Throwable error,String q,boolean home){
+        status.setText(OnlineErrors.message(error));
+        body.addView(action("Retry search",()->{if(home)showHome();else search(q);}));
+        body.addView(action("Error details",()->{
+            String detail="Radha Music 1.3.1\nAndroid "+android.os.Build.VERSION.RELEASE+" (API "+android.os.Build.VERSION.SDK_INT+")\n"+OnlineErrors.details(error);
+            android.app.AlertDialog.Builder dialog=new android.app.AlertDialog.Builder(getContext()).setTitle("Online connection details").setMessage(detail).setPositiveButton("Close",null);
+            dialog.setNeutralButton("Copy error",(d,w)->{android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getContext().getSystemService(Context.CLIPBOARD_SERVICE);clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Radha Music error",detail));Toast.makeText(getContext(),"Error copied",Toast.LENGTH_SHORT).show();});dialog.show();
+        }));
     }
     private View trackRow(MediaEntry entry){
         LinearLayout wrap=column();wrap.setPadding(0,0,0,dp(watch?18:6));LinearLayout line=row();line.setPadding(0,dp(6),0,dp(6));

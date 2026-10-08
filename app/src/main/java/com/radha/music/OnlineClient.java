@@ -14,21 +14,32 @@ import java.util.*;
 /** Public, unauthenticated extraction only. No Google credentials or downloaded media. */
 public final class OnlineClient {
     public record Track(String url,String name,String artist,String image,long seconds) {}
-    public record Results(List<Track> tracks,SearchQueryHandler query,Page next) {}
+    public record Results(List<Track> tracks,SearchQueryHandler query,Page next,boolean fallback) {}
     public record Streams(String audio,String video,String muxed,long created) {}
     private static boolean initialized;
     private static final Map<String,Streams> cache=new LinkedHashMap<>();
     public static synchronized void init(){if(!initialized){NewPipe.init(new Network(),new Localization("en","IN"));initialized=true;}}
     public static Results search(String text,boolean video) throws Exception {
+        if(video)return searchCatalog(text,"videos",false);
+        try {
+            Results music=searchCatalog(text,"music_songs",false);
+            if(!music.tracks().isEmpty())return music;
+        }catch(Exception musicError){
+            if(Thread.currentThread().isInterrupted())throw new InterruptedIOException();
+            try{return searchCatalog(text,"videos",true);}catch(Exception fallbackError){fallbackError.addSuppressed(musicError);throw fallbackError;}
+        }
+        return searchCatalog(text,"videos",true);
+    }
+    private static Results searchCatalog(String text,String filter,boolean fallback) throws Exception {
         init();StreamingService service=ServiceList.YouTube;
-        SearchQueryHandler query=service.getSearchQHFactory().fromQuery(text,Collections.singletonList(video?"videos":"music_songs"),"");
+        SearchQueryHandler query=service.getSearchQHFactory().fromQuery(text,Collections.singletonList(filter),"");
         SearchInfo info=SearchInfo.getInfo(service,query);
         if(info.getRelatedItems().isEmpty()&&!info.getErrors().isEmpty())throw new IOException("Search is temporarily unavailable",info.getErrors().get(0));
-        return new Results(tracks(info.getRelatedItems()),query,info.getNextPage());
+        return new Results(tracks(info.getRelatedItems()),query,info.getNextPage(),fallback);
     }
     public static Results more(Results prior) throws Exception {
         init();ListExtractor.InfoItemsPage<InfoItem> page=SearchInfo.getMoreItems(ServiceList.YouTube,prior.query(),prior.next());
-        return new Results(tracks(page.getItems()),prior.query(),page.getNextPage());
+        return new Results(tracks(page.getItems()),prior.query(),page.getNextPage(),prior.fallback());
     }
     public static boolean hasMore(Results result){return result!=null&&Page.isValid(result.next());}
     public static List<Track> tracks(List<? extends InfoItem> items){
@@ -40,9 +51,10 @@ public final class OnlineClient {
         return result;
     }
     public static synchronized Streams resolve(String id) throws IOException {
-        init();String key=OnlineRules.videoId(id);if(key==null)throw new IOException("Invalid online media ID");
+        String key=OnlineRules.videoId(id);if(key==null)throw new IOException("Invalid online media ID");
         Streams saved=cache.get(key);if(saved!=null&&System.currentTimeMillis()-saved.created()<10*60*1000)return saved;
         try {
+            init();
             StreamInfo info=StreamInfo.getInfo(ServiceList.YouTube,"https://www.youtube.com/watch?v="+key);
             AudioStream audio=info.getAudioStreams().stream().filter(s->s.isUrl()&&s.getDeliveryMethod()==DeliveryMethod.PROGRESSIVE_HTTP)
                 .max(Comparator.comparingInt(AudioStream::getAverageBitrate)).orElse(null);
@@ -50,7 +62,7 @@ public final class OnlineClient {
             if(audio==null&&muxed==null)throw new IOException("No playable stream is currently available");
             Streams result=new Streams(audio==null?null:audio.getContent(),video==null?null:video.getContent(),muxed==null?null:muxed.getContent(),System.currentTimeMillis());
             if(cache.size()>=24)cache.remove(cache.keySet().iterator().next());cache.put(key,result);return result;
-        }catch(Exception e){if(e instanceof InterruptedException)Thread.currentThread().interrupt();throw new IOException("YouTube could not provide this stream. Retry later or open it in YouTube.",e);}
+        }catch(Exception|LinkageError e){if(e instanceof InterruptedException)Thread.currentThread().interrupt();throw new IOException("YouTube could not provide this stream. Retry later or open it in YouTube.",e);}
     }
     public static synchronized void invalidate(String id){cache.remove(OnlineRules.videoId(id));}
     private static int resolution(VideoStream s){try{return Integer.parseInt(s.getResolution().replaceAll("[^0-9].*",""));}catch(Exception e){return 0;}}
