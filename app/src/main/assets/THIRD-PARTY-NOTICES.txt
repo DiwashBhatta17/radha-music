@@ -2,7 +2,7 @@
 
 Radha Music — created, designed and developed by Diwash Bhatta.
 
-Radha Music 1.3 is distributed under **GPL-3.0-or-later**. The complete corresponding app source and build configuration are published at https://github.com/DiwashBhatta17/radha-music. See LICENSE for the license text. There is no warranty.
+Radha Music is distributed under **GPL-3.0-or-later**. The complete corresponding app source and build configuration are published at https://github.com/DiwashBhatta17/radha-music. See LICENSE for the license text. There is no warranty.
 
 ## Online extraction
 
@@ -19,4 +19,9 @@ Radha Music 1.3 is distributed under **GPL-3.0-or-later**. The complete correspo
 - AndroidX support libraries and Android desugared Java libraries — Apache-2.0 and their respective bundled notices.
 - **Guava**, Google — Apache-2.0. Source: https://github.com/google/guava
 
-The app is independent of YouTube and Google. No affiliation or endorsement is implied. Online availability depends on the upstream service and extractor. The app does not sign in to Google, import YouTube account history, bypass paid or restricted content, or download music/video for offline storage.
+The app is independent of YouTube and Google. No affiliation or endorsement is implied. Online availability depends on the upstream service and extractor. The app does not sign in to Google, import YouTube account history, bypass paid or restricted content. Private offline downloads use available public streams; files stay within Radha app storage.
+
+
+## Lyrics service
+
+Lyrics metadata and text are retrieved from LRCLIB (https://lrclib.net). Radha sends the track title, artist and duration only when lyrics are requested. Lyrics retain their original rights; no lyrics are bundled with the APK. LRCLIB is a network service, not an embedded library.

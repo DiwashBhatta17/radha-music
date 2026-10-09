@@ -2,6 +2,40 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
+## Version 1.4 — discovery, lyrics, private downloads and portable backups
+
+### Online Music and Watch
+
+- **Speed Dials:** online songs qualify after three listens of at least 30 seconds. Higher play counts come first; ties use the most recent listen. Three columns and two rows per swipe page, up to five pages (30 songs). Counts persist on the device and are included in backups. Per-song counting starts with this version; older artist totals cannot reconstruct past per-song plays.
+- **Quick Picks:** five song rows per horizontal page, up to five pages. The app fetches another result page when needed; fewer cards appear if the source has fewer results. **Show more** opens the full list and further pagination.
+- **Forgotten Favorites:** songs played at least twice and not heard for 14 days. No invented history or placeholder songs are inserted. Song/video cards and user playlists scroll horizontally.
+- **Made for you:** mood cards open real searches using your listening preferences. These are discovery searches, not imported YouTube playlists or YouTube's recommendation model.
+- **Add to library:** available in online item menus. Open **Saved → My library** for your saved songs and videos. Saving metadata does not itself download the media.
+- Loading lists and buffering video use the coral Radha logo spinner. Video opens in portrait; the rotation control explicitly switches portrait/landscape. Decoder dimensions and fullscreen no longer override that choice. Original aspect ratio remains fitted to the screen.
+
+### Full-screen lyrics
+
+Open **Lyrics** in the music player. Synced lyrics highlight the current line and scroll with playback; tapping a timed line seeks to it. Manual scrolling pauses automatic scrolling briefly. Plain lyrics appear when timing is unavailable, and missing lyrics have an explicit empty state. Previous/next and pause remain available.
+
+Lyrics are supplied by [LRCLIB](https://lrclib.net). Opening lyrics sends the song title, artist and duration to that service. Matching requires the same title/artist and, when known, a similar duration. Availability and metadata quality vary. Returned lyrics are cached privately, with a 200-track limit; cached lyrics work offline.
+
+### App-only downloads
+
+Use **Download for offline** in an online song/video menu or the player download action. Downloads are stored under Radha's private `files/downloads` directory, not the public Downloads folder or MediaStore. Access them through **Downloads** in Online/Watch or Saved. Other normal apps cannot browse this private folder; uninstalling Radha removes it unless you first export a backup.
+
+- Music downloads its available audio stream. Video downloads its video and audio streams and plays them together offline, or uses a combined stream when available. Files are not transcoded.
+- Downloads run one at a time with a foreground notification showing progress and cancellation. Incomplete transfers are not marked downloaded; failure/cancellation offers retry. Automatic resume after process termination is not implemented.
+- Playback prefers completed private downloads, including items launched from saved collections. Long press a completed download to remove it. Source availability, storage space, Android background limits and codecs still apply.
+- Download activity does not enable background playback: listening with the screen off still requires **Background · On**.
+
+### Settings-only export/import
+
+**Settings → Export backup** saves a ZIP through Android's file picker. It includes listening preferences, per-song play counts, history, saved online library, favorites, playlists, custom artwork, cached lyrics and completed private downloads. There is no automatic cloud sync or account upload; the destination is chosen by you.
+
+Transfer the ZIP to another phone and use **Settings → Import backup**. Import replaces Radha's saved preferences/collections after validating and staging the backup. Existing files are preserved for rollback if restoration fails. Finish or cancel active downloads before exporting/importing and keep the app open until complete.
+
+Ordinary phone music/videos are not duplicated into the backup. Copy those separately, re-grant media permissions and re-select folders; local content URIs may need playlist entries re-added on the new phone. Online IDs and private downloads are portable. The current playback queue/session and temporary background-playback toggle are not backed up. Export/import controls appear only in Settings, not on the home page.
+
 ## Version 1.3.3 — Android 11 URL encoding compatibility
 
 The reported `NoSuchMethodError: URLEncoder.encode(String, Charset)` happened before a YouTube search request could be sent. Android added that overload in API 33; the phone runs API 30. The previous default desugaring configuration did not rewrite that call.
@@ -75,7 +109,7 @@ An Android local and online music and video player. Supports Android 8.0 (API 26
 
 ## Install the APK
 
-1. Transfer **Radha-Music-v1.3.3.apk** to your Android phone and open it from Files.
+1. Transfer **Radha-Music-v1.4.apk** to your Android phone and open it from Files.
 2. If asked, allow that file manager to install unknown apps, then install.
 3. Open **Radha Music** and allow music/audio and video access. Choose all videos if you want your complete library.
 4. Open Videos for source folders, or Music for songs with the newest additions first.
@@ -105,7 +139,7 @@ Open this folder in Android Studio, let Gradle sync, and choose **Build APK(s)**
 .\gradlew.bat assembleDebug
 ```
 
-The output is `app/build/outputs/apk/debug/app-debug.apk`. Gradle 8.11.1, Android Gradle Plugin 8.9.1, Media3 1.8.0, NewPipe Extractor v0.26.5, and desugar_jdk_libs 2.1.5. Extractor dependencies are pinned and resolved through JitPack. The Gradle wrapper downloads its distribution and dependencies on the first build. The working project uses `.local/debug.keystore` when present; otherwise Android's default debug key is used. Preserve the existing signing key for updates. The packaged source excludes local SDK paths, caches, and keys. A build from a different key cannot update an installed app signed with the previous key.
+The output is `app/build/outputs/apk/debug/app-debug.apk`. Gradle 8.11.1, Android Gradle Plugin 8.9.1, Media3 1.8.0, NewPipe Extractor v0.26.5, and desugar_jdk_libs_nio 2.1.5. Extractor dependencies are pinned and resolved through JitPack. The Gradle wrapper downloads its distribution and dependencies on the first build. The working project uses `.local/debug.keystore` when present; otherwise Android's default debug key is used. Preserve the existing signing key for updates. The packaged source excludes local SDK paths, caches, and keys. A build from a different key cannot update an installed app signed with the previous key.
 
 ## Practical limits
 
@@ -114,7 +148,7 @@ The output is `app/build/outputs/apk/debug/app-debug.apk`. Gradle 8.11.1, Androi
 - Favorites, collections, and selected folders persist. The current queue and playback position are kept only while the playback service lives.
 - Files deleted or moved outside the app may leave stale playlist entries. Remove and re-add those entries.
 - Redmi/MIUI battery restrictions can stop background services. If this happens after you enable background mode, allow background activity for Radha Music in the phone’s app/battery settings.
-- No YouTube, Instagram, or TikTok downloading is included.
+- Private offline downloads are supported for available YouTube streams. Instagram and TikTok integration is not included.
 
 AndroidX Media3 is licensed under Apache 2.0: https://github.com/androidx/media
 

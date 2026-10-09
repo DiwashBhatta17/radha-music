@@ -71,6 +71,15 @@ public class OnlineScreenAndroidTest {
    try{awaitText(screen,"No results. Try a different artist or title.");layout(screen);assertVisible(screen,"No results. Try a different artist or title.");}finally{screen.close();}
   }
  }
+ @Test public void speedDialGridHasThreeColumnsAndFiveSwipePages()throws Exception {
+  try(var controller=Robolectric.buildActivity(Activity.class).setup()){
+   Activity a=controller.get();OnlineStore store=new OnlineStore(a);for(int i=0;i<30;i++){String id=String.format(java.util.Locale.US,"song%07d",i);MediaEntry e=new MediaEntry("radha://youtube/"+id+"/audio","Dial "+i,"YouTube","Artist",false,100000,1);for(int j=0;j<3;j++)store.listened(e);}
+   OnlineScreen.SearchSource source=new OnlineScreen.SearchSource(){public OnlineClient.Results search(String q,boolean w){return result("Quick song");}public OnlineClient.Results more(OnlineClient.Results previous){throw new AssertionError();}};
+   OnlineScreen screen=new OnlineScreen(a,false,false,store,HOST,source);a.setContentView(screen);
+   try{awaitText(screen,"Quick song");layout(screen);View carousel=description(screen,"Swipe left or right through 5 pages");assertNotNull(carousel);ViewGroup pages=(ViewGroup)((ViewGroup)carousel).getChildAt(0);assertEquals(5,pages.getChildCount());ViewGroup first=(ViewGroup)pages.getChildAt(0);assertEquals(2,first.getChildCount());assertEquals(3,((ViewGroup)first.getChildAt(0)).getChildCount());assertEquals(3,((ViewGroup)first.getChildAt(1)).getChildCount());}finally{screen.close();}
+  }
+ }
+ static View description(View v,String value){if(value.contentEquals(v.getContentDescription()==null?"":v.getContentDescription()))return v;if(v instanceof ViewGroup g)for(int i=0;i<g.getChildCount();i++){View result=description(g.getChildAt(i),value);if(result!=null)return result;}return null;}
  static OnlineClient.Results result(String name){return new OnlineClient.Results(Collections.singletonList(new OnlineClient.Track("https://www.youtube.com/watch?v=abcdefghijk",name,"Test artist","",123)),null,null,false);}
  static void awaitText(View root,String value)throws Exception{for(int i=0;i<200;i++){Shadows.shadowOf(Looper.getMainLooper()).idle();if(find(root,value)!=null)return;Thread.sleep(10);}fail("Missing UI text: "+value);}
  static void layout(View root){root.measure(View.MeasureSpec.makeMeasureSpec(393,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(851,View.MeasureSpec.EXACTLY));root.layout(0,0,393,851);}

@@ -14,7 +14,9 @@ import java.io.IOException;
 public final class OnlineMediaSourceFactory implements MediaSource.Factory {
     private final DefaultMediaSourceFactory local;
     private final ProgressiveMediaSource.Factory online;
+    private final DownloadStore downloads;
     public OnlineMediaSourceFactory(Context context){
+        downloads=new DownloadStore(context);
         DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory().setUserAgent("Mozilla/5.0").setConnectTimeoutMs(15000).setReadTimeoutMs(20000);
         local=new DefaultMediaSourceFactory(context);
         ResolvingDataSource.Factory resolving=new ResolvingDataSource.Factory(http,spec->{
@@ -28,6 +30,12 @@ public final class OnlineMediaSourceFactory implements MediaSource.Factory {
     }
     @Override public MediaSource createMediaSource(MediaItem item){
         if(OnlineRules.videoId(item.mediaId)==null)return local.createMediaSource(item);
+        DownloadStore.Files saved=downloads.files(item.mediaId);
+        if(saved!=null){
+            MediaSource video=saved.video()==null?null:local.createMediaSource(item.buildUpon().setUri(Uri.fromFile(saved.video())).build());
+            MediaSource audio=saved.audio()==null?null:local.createMediaSource(item.buildUpon().setUri(Uri.fromFile(saved.audio())).build());
+            return video!=null&&audio!=null?new MergingMediaSource(true,video,audio):video!=null?video:audio;
+        }
         if(!item.mediaId.endsWith("/video"))return online.createMediaSource(item);
         String audioId=item.mediaId.substring(0,item.mediaId.length()-5)+"audio";
         MediaItem audio=item.buildUpon().setUri(audioId).build();
