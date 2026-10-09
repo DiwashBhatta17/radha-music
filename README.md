@@ -2,6 +2,15 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
+## Version 1.3.3 — Android 11 URL encoding compatibility
+
+The reported `NoSuchMethodError: URLEncoder.encode(String, Charset)` happened before a YouTube search request could be sent. Android added that overload in API 33; the phone runs API 30. The previous default desugaring configuration did not rewrite that call.
+
+- Use `desugar_jdk_libs_nio:2.1.5`, which includes backported URL encoding/decoding, so the extractor can run on supported older Android versions. No API key or change to phone data permissions is involved.
+- A packaged-APK regression check rejects references to the unsupported platform Charset overloads and requires compiled, bundled implementations of both `j$.net.URLEncoder` and `j$.net.URLDecoder`. Desktop JVM tests alone cannot catch this packaging defect.
+- Run after building: `java tools/VerifyUrlCodecCompat.java app/build/outputs/apk/debug/app-debug.apk`. The check intentionally fails against v1.3.2 with the exact reported method.
+- Reference: [Android's NIO desugaring API support](https://developer.android.com/studio/write/java11-nio-support-table).
+
 ## Version 1.3.2 — visible online results and Android UI coverage
 
 - Online now places Quick picks, loading status, results and connection errors above the decorative mix cards. Watch uses the same result panel.
@@ -66,7 +75,7 @@ An Android local and online music and video player. Supports Android 8.0 (API 26
 
 ## Install the APK
 
-1. Transfer **Radha-Music-v1.3.2.apk** to your Android phone and open it from Files.
+1. Transfer **Radha-Music-v1.3.3.apk** to your Android phone and open it from Files.
 2. If asked, allow that file manager to install unknown apps, then install.
 3. Open **Radha Music** and allow music/audio and video access. Choose all videos if you want your complete library.
 4. Open Videos for source folders, or Music for songs with the newest additions first.

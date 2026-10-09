@@ -73,7 +73,7 @@ public final class OnlineScreen extends LinearLayout {
         status.setText(OnlineErrors.message(error));
         results.addView(action("Retry search",()->{if(home)showHome();else search(q);}));
         results.addView(action("Error details",()->{
-            String detail="Radha Music 1.3.2\nAndroid "+android.os.Build.VERSION.RELEASE+" (API "+android.os.Build.VERSION.SDK_INT+")\n"+OnlineErrors.details(error);
+            String detail="Radha Music 1.3.3\nAndroid "+android.os.Build.VERSION.RELEASE+" (API "+android.os.Build.VERSION.SDK_INT+")\n"+OnlineErrors.details(error);
             android.app.AlertDialog.Builder dialog=new android.app.AlertDialog.Builder(getContext()).setTitle("Online connection details").setMessage(detail).setPositiveButton("Close",null);
             dialog.setNeutralButton("Copy error",(d,w)->{android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getContext().getSystemService(Context.CLIPBOARD_SERVICE);clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Radha Music error",detail));Toast.makeText(getContext(),"Error copied",Toast.LENGTH_SHORT).show();});dialog.show();
         }));
