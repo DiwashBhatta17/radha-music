@@ -14,7 +14,7 @@ public final class OnlineScreen extends LinearLayout {
         default void downloads(){} default Map<String,List<MediaEntry>> playlists(){return Collections.emptyMap();}
     }
     interface SearchSource {OnlineClient.Results search(String query,boolean watch)throws Exception;OnlineClient.Results more(OnlineClient.Results previous)throws Exception;}
-    private static final SearchSource YOUTUBE=new SearchSource(){public OnlineClient.Results search(String q,boolean w)throws Exception{return OnlineClient.search(q,w);}public OnlineClient.Results more(OnlineClient.Results p)throws Exception{return OnlineClient.more(p);}};
+    private static final SearchSource YOUTUBE=new SearchSource(){public OnlineClient.Results search(String q,boolean w)throws Exception{return SessionCatalog.INSTANCE.search(q,w);}public OnlineClient.Results more(OnlineClient.Results p)throws Exception{return SessionCatalog.INSTANCE.more(p);}};
     private final SearchSource source;private final Host host;private final OnlineStore store;
     private final boolean watch;private final int ink,muted,surface;
     private final android.os.Handler main=new android.os.Handler(android.os.Looper.getMainLooper());
@@ -35,7 +35,7 @@ public final class OnlineScreen extends LinearLayout {
     private void gap(int height){body.addView(new View(getContext()),new LayoutParams(1,dp(height)));}
     private TextView action(String label,Runnable run){TextView t=text(label,13,ink,true);t.setGravity(Gravity.CENTER);t.setPadding(dp(12),dp(10),dp(12),dp(10));t.setMinHeight(dp(48));t.setBackground(shape(surface));t.setOnClickListener(v->run.run());return t;}
     private void heading(String label,Runnable more){LinearLayout line=row();line.addView(text(label,21,ink,true),new LayoutParams(0,-2,1));if(more!=null)line.addView(action("Show more ›",more));body.addView(line);gap(10);}
-    private String seed(){List<String> artists=store.artists();return artists.isEmpty()?store.preference()+" songs":artists.get(0)+(watch?" music video":" songs");}
+    private String seed(){return SessionCatalog.INSTANCE.seed(store,watch);}
     private void chips(){HorizontalScrollView sc=new HorizontalScrollView(getContext());sc.setHorizontalScrollBarEnabled(false);LinearLayout line=row();for(String label:watch?new String[]{"For you","Music videos","Live sessions","Acoustic"}:new String[]{"For you","Chill","Hindi","Nepali","Marathi"}){LayoutParams p=new LayoutParams(-2,-2);p.rightMargin=dp(8);line.addView(action(label,()->search(label.equals("For you")?seed():label+(watch?" music video":" songs"))),p);}sc.addView(line);body.addView(sc);gap(18);}
     public void showHome(){
         homeMode=true;query=seed();autoPages=0;body.removeAllViews();scroll.scrollTo(0,0);chips();

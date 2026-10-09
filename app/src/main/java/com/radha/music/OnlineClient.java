@@ -18,6 +18,7 @@ public final class OnlineClient {
     public record Streams(String audio,String video,String muxed,long created) {}
     private static boolean initialized;
     private static final Map<String,Streams> cache=new LinkedHashMap<>();
+    private static final java.util.concurrent.ConcurrentHashMap<String,java.util.concurrent.FutureTask<Streams>> resolving=new java.util.concurrent.ConcurrentHashMap<>();
     public static synchronized void init(){if(!initialized){NewPipe.init(new Network(),new Localization("en","IN"));initialized=true;}}
     public static Results search(String text,boolean video) throws Exception {
         if(video)return searchCatalog(text,"videos",false);
@@ -50,9 +51,14 @@ public final class OnlineClient {
         }
         return result;
     }
-    public static synchronized Streams resolve(String id) throws IOException {
+    public static Streams resolve(String id) throws IOException {
         String key=OnlineRules.videoId(id);if(key==null)throw new IOException("Invalid online media ID");
-        Streams saved=cache.get(key);if(saved!=null&&System.currentTimeMillis()-saved.created()<10*60*1000)return saved;
+        synchronized(OnlineClient.class){Streams saved=cache.get(key);if(saved!=null&&System.currentTimeMillis()-saved.created()<10*60*1000)return saved;}
+        java.util.concurrent.FutureTask<Streams> task=new java.util.concurrent.FutureTask<>(()->fetchStreams(key));
+        java.util.concurrent.FutureTask<Streams> prior=resolving.putIfAbsent(key,task);boolean owner=prior==null;if(!owner)task=prior;
+        try{if(owner)task.run();return task.get();}catch(InterruptedException e){Thread.currentThread().interrupt();throw new InterruptedIOException();}catch(java.util.concurrent.ExecutionException e){throw new IOException("Could not resolve stream",e.getCause());}finally{if(owner)resolving.remove(key,task);}
+    }
+    private static Streams fetchStreams(String key)throws IOException {
         try {
             init();
             StreamInfo info=StreamInfo.getInfo(ServiceList.YouTube,"https://www.youtube.com/watch?v="+key);
@@ -61,7 +67,7 @@ public final class OnlineClient {
             VideoStream video=bestVideo(info.getVideoOnlyStreams()),muxed=bestVideo(info.getVideoStreams());
             if(audio==null&&muxed==null)throw new IOException("No playable stream is currently available");
             Streams result=new Streams(audio==null?null:audio.getContent(),video==null?null:video.getContent(),muxed==null?null:muxed.getContent(),System.currentTimeMillis());
-            if(cache.size()>=24)cache.remove(cache.keySet().iterator().next());cache.put(key,result);return result;
+            synchronized(OnlineClient.class){if(cache.size()>=24)cache.remove(cache.keySet().iterator().next());cache.put(key,result);}return result;
         }catch(Exception|LinkageError e){if(e instanceof InterruptedException)Thread.currentThread().interrupt();throw new IOException("YouTube could not provide this stream. Retry later or open it in YouTube.",e);}
     }
     public static synchronized void invalidate(String id){cache.remove(OnlineRules.videoId(id));}

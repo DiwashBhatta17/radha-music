@@ -6,6 +6,9 @@ Created, designed and developed by **Diwash Bhatta**.
 
 ### Online Music and Watch
 
+- **Learns from listening:** Quick Picks blends your most-played artist, recent artists, and chosen preferences. Results alternate between sources and duplicate videos are removed. A listen qualifies after 30 seconds. This is an on-device taste profile with search-based discovery, not imported YouTube history or its private recommendation algorithm.
+- **One load per session:** Music and Watch preload at launch. Returning to a tab reuses shared results, including in-flight requests. Recommendations refresh on a fresh session or preference change. Page caches live in memory; artwork requests are deduplicated. Playback buffers up to 90 seconds and waits for 5 seconds of buffered media after a stall. Server throttling or poor connections can still cause buffering.
+
 - **Speed Dials:** online songs qualify after three listens of at least 30 seconds. Higher play counts come first; ties use the most recent listen. Three columns and two rows per swipe page, up to five pages (30 songs). Counts persist on the device and are included in backups. Per-song counting starts with this version; older artist totals cannot reconstruct past per-song plays.
 - **Quick Picks:** five song rows per horizontal page, up to five pages. The app fetches another result page when needed; fewer cards appear if the source has fewer results. **Show more** opens the full list and further pagination.
 - **Forgotten Favorites:** songs played at least twice and not heard for 14 days. No invented history or placeholder songs are inserted. Song/video cards and user playlists scroll horizontally.
@@ -17,7 +20,7 @@ Created, designed and developed by **Diwash Bhatta**.
 
 Open **Lyrics** in the music player. Synced lyrics highlight the current line and scroll with playback; tapping a timed line seeks to it. Manual scrolling pauses automatic scrolling briefly. Plain lyrics appear when timing is unavailable, and missing lyrics have an explicit empty state. Previous/next and pause remain available.
 
-Lyrics are supplied by [LRCLIB](https://lrclib.net). Opening lyrics sends the song title, artist and duration to that service. Matching requires the same title/artist and, when known, a similar duration. Availability and metadata quality vary. Returned lyrics are cached privately, with a 200-track limit; cached lyrics work offline.
+Lyrics are supplied by [LRCLIB](https://lrclib.net). Opening lyrics sends the song title, artist and duration to that service. Matching requires the same title/artist and, when known, a similar duration. Availability and metadata quality vary. Returned lyrics are cached privately, with automatic age and size limits; cached lyrics work offline.
 
 ### App-only downloads
 
@@ -29,6 +32,8 @@ Use **Download for offline** in an online song/video menu or the player download
 - Download activity does not enable background playback: listening with the screen off still requires **Background · On**.
 
 ### Settings-only export/import
+
+Recent listening entries expire after 15 days, checked on app opening and listening/history access. Compact play totals (up to 300 tracks) and artist scores (up to 100 artists) remain for taste and Speed Dials. Saved items, playlists, custom artwork and intentional downloads are preserved. Forgotten Favorites can surface during the 14–15 day window before dated history expires. No cleanup notification is shown. Cached lyrics expire after 15 days and are limited to 100 files/8 MiB during cleanup.
 
 **Settings → Export backup** saves a ZIP through Android's file picker. It includes listening preferences, per-song play counts, history, saved online library, favorites, playlists, custom artwork, cached lyrics and completed private downloads. There is no automatic cloud sync or account upload; the destination is chosen by you.
 

@@ -7,9 +7,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public final class LyricsClient {
+    static synchronized void trimCache(Context context){
+        File[] files=new File(context.getFilesDir(),"lyrics").listFiles();if(files==null)return;
+        Arrays.sort(files,Comparator.comparingLong(File::lastModified).reversed());long bytes=0;int count=0;
+        for(File file:files)if(file.isFile()&&file.getName().endsWith(".json")){
+            if(System.currentTimeMillis()-file.lastModified()>=15L*24*60*60*1000||count>=100||bytes+file.length()>8L*1024*1024)file.delete();
+            else{count++;bytes+=file.length();}
+        }
+    }
     public record Lyrics(String plain,List<LyricsRules.Line> lines,boolean instrumental){}
     private static String encode(String s)throws Exception{return URLEncoder.encode(s,"UTF-8");}
     public static Lyrics fetch(Context context,MediaEntry entry)throws Exception {
+        trimCache(context);
         String title=LyricsRules.title(entry.name),artist=LyricsRules.artist(entry.artist);long seconds=entry.duration/1000;
         String key=java.util.UUID.nameUUIDFromBytes((title+"\n"+artist+"\n"+seconds).getBytes(StandardCharsets.UTF_8)).toString();File dir=new File(context.getFilesDir(),"lyrics"),cache=new File(dir,key+".json");
         if(cache.isFile())try(FileInputStream in=new FileInputStream(cache)){return parse(new JSONObject(read(in)));}

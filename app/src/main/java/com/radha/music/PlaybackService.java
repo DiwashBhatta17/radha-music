@@ -33,7 +33,7 @@ public final class PlaybackService extends MediaSessionService {
     }};
     @Override public void onCreate() {
         super.onCreate(); instance=this;history=new LibraryStore(this);onlineHistory=new OnlineStore(this);
-        player=new ExoPlayer.Builder(this).setMediaSourceFactory(new OnlineMediaSourceFactory(this)).setSeekBackIncrementMs(6000).setSeekForwardIncrementMs(6000).build();
+        player=new ExoPlayer.Builder(this).setLoadControl(new androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(30000,90000,1500,5000).setPrioritizeTimeOverSizeThresholds(true).build()).setMediaSourceFactory(new OnlineMediaSourceFactory(this)).setSeekBackIncrementMs(6000).setSeekForwardIncrementMs(6000).build();
         player.setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
         player.setHandleAudioBecomingNoisy(true);
         player.setWakeMode(C.WAKE_MODE_NETWORK);
@@ -60,6 +60,6 @@ public final class PlaybackService extends MediaSessionService {
     }
     public void setAutoNext(boolean enabled){autoNext=enabled;player.setPauseAtEndOfMediaItems(!enabled);}
     @Override public MediaSession onGetSession(MediaSession.ControllerInfo info){return session;}
-    @Override public void onTaskRemoved(Intent intent){if(!background||!player.getPlayWhenReady()){player.pause();stopSelf();}}
+    @Override public void onTaskRemoved(Intent intent){SessionCatalog.INSTANCE.reset();if(!background||!player.getPlayWhenReady()){player.pause();stopSelf();}}
     @Override public void onDestroy(){timer.removeCallbacksAndMessages(null);if(enhancer!=null)enhancer.release();session.release();player.release();instance=null;super.onDestroy();}
 }

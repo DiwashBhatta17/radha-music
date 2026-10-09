@@ -34,11 +34,12 @@ public final class ArtworkStore {
     }
     public void loadRemote(String url,Result result){
         if(url==null||!url.startsWith("https://")){result.ready(null);return;}Bitmap cached=cache.get(url);if(cached!=null){result.ready(cached);return;}
+        synchronized(pending){if(pending.containsKey(url)){pending.get(url).add(result);return;}pending.put(url,new ArrayList<>(Collections.singletonList(result)));}
         worker.execute(()->{Bitmap image=null;java.net.HttpURLConnection connection=null;try{
             connection=(java.net.HttpURLConnection)new java.net.URL(url).openConnection();connection.setConnectTimeout(10000);connection.setReadTimeout(10000);
             try(InputStream in=connection.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] chunk=new byte[4096];int n;while((n=in.read(chunk))!=-1){if(out.size()+n>4*1024*1024)throw new IOException("Artwork too large");out.write(chunk,0,n);}image=decode(out.toByteArray());}
             if(image!=null)cache.put(url,image);
-        }catch(Exception ignored){}finally{if(connection!=null)connection.disconnect();}Bitmap loaded=image;main.post(()->result.ready(loaded));});
+        }catch(Exception ignored){}finally{if(connection!=null)connection.disconnect();}Bitmap loaded=image;main.post(()->{List<Result> callbacks;synchronized(pending){callbacks=pending.remove(url);}if(callbacks!=null)for(Result cb:callbacks)cb.ready(loaded);});});
     }
     private Bitmap decode(byte[] bytes){BitmapFactory.Options o=new BitmapFactory.Options();o.inJustDecodeBounds=true;BitmapFactory.decodeByteArray(bytes,0,bytes.length,o);o.inSampleSize=1;while(Math.max(o.outWidth,o.outHeight)/o.inSampleSize>768)o.inSampleSize*=2;o.inJustDecodeBounds=false;return BitmapFactory.decodeByteArray(bytes,0,bytes.length,o);}
     public void save(String id,Uri uri,Saved callback){worker.execute(()->{boolean ok=false;File temp=null;try{BitmapFactory.Options o=new BitmapFactory.Options();o.inJustDecodeBounds=true;try(InputStream in=context.getContentResolver().openInputStream(uri)){BitmapFactory.decodeStream(in,null,o);}o.inSampleSize=1;while(Math.max(o.outWidth,o.outHeight)/o.inSampleSize>768)o.inSampleSize*=2;o.inJustDecodeBounds=false;Bitmap b;try(InputStream in=context.getContentResolver().openInputStream(uri)){b=BitmapFactory.decodeStream(in,null,o);}if(b!=null){File dest=file(id);dest.getParentFile().mkdirs();temp=new File(dest.getPath()+".tmp");try(OutputStream out=new FileOutputStream(temp)){ok=b.compress(Bitmap.CompressFormat.JPEG,92,out);}if(ok)ok=temp.renameTo(dest);if(ok){cache.put(id,b);missing.remove(id);}}}catch(Exception ignored){}finally{if(temp!=null&&temp.exists())temp.delete();}boolean done=ok;main.post(()->callback.complete(done));});}
