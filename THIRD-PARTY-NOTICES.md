@@ -24,4 +24,4 @@ The app is independent of YouTube and Google. No affiliation or endorsement is i
 
 ## Lyrics service
 
-Lyrics metadata and text are retrieved from LRCLIB (https://lrclib.net). Radha sends the track title, artist and duration only when lyrics are requested. Lyrics retain their original rights; no lyrics are bundled with the APK. LRCLIB is a network service, not an embedded library.
+Lyrics metadata and text are retrieved from LRCLIB (https://lrclib.net). Radha sends the track title, artist and duration when checking lyric availability for a ready track or opening lyrics. Lyrics retain their original rights; no lyrics are bundled with the APK. LRCLIB is a network service, not an embedded library.

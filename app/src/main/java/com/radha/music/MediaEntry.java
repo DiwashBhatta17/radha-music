@@ -15,8 +15,9 @@ public final class MediaEntry {
     public MediaEntry(String id,String name,String folder,String artist,boolean video,long duration,long added,String image){this.id=id;this.name=name;this.folder=folder;this.artist=artist;this.video=video;this.duration=duration;this.added=added;this.image=image;}
     public boolean online(){return OnlineRules.videoId(id)!=null;}
     public MediaItem item() {
+        android.os.Bundle details=new android.os.Bundle();details.putLong("duration",duration);
         return new MediaItem.Builder().setMediaId(id).setUri(Uri.parse(id)).setMediaMetadata(new MediaMetadata.Builder()
-            .setTitle(name).setArtist(online()?artist:video ? folder : artist).setArtworkUri(image.isEmpty()?null:Uri.parse(image)).setMediaType(video ? MediaMetadata.MEDIA_TYPE_VIDEO : MediaMetadata.MEDIA_TYPE_MUSIC).build()).build();
+            .setExtras(details).setTitle(name).setArtist(online()?artist:video ? folder : artist).setArtworkUri(image.isEmpty()?null:Uri.parse(image)).setMediaType(video ? MediaMetadata.MEDIA_TYPE_VIDEO : MediaMetadata.MEDIA_TYPE_MUSIC).build()).build();
     }
     public JSONObject json() {
         JSONObject o=new JSONObject();

@@ -19,7 +19,7 @@ public final class LyricsClient {
     private static String encode(String s)throws Exception{return URLEncoder.encode(s,"UTF-8");}
     public static Lyrics fetch(Context context,MediaEntry entry)throws Exception {
         trimCache(context);
-        String title=LyricsRules.title(entry.name),artist=LyricsRules.artist(entry.artist);long seconds=entry.duration/1000;
+        String title=LyricsRules.title(entry.online()?entry.name:LibraryRules.mediaTitle(entry.name)),artist=LyricsRules.artist(entry.artist);long seconds=entry.duration/1000;
         String key=java.util.UUID.nameUUIDFromBytes((title+"\n"+artist+"\n"+seconds).getBytes(StandardCharsets.UTF_8)).toString();File dir=new File(context.getFilesDir(),"lyrics"),cache=new File(dir,key+".json");
         if(cache.isFile())try(FileInputStream in=new FileInputStream(cache)){return parse(new JSONObject(read(in)));}
         String params="track_name="+encode(title)+"&artist_name="+encode(artist)+(seconds>0?"&duration="+seconds:"");JSONObject value=null;
@@ -28,6 +28,6 @@ public final class LyricsClient {
         if(value==null)return new Lyrics("",Collections.emptyList(),false);Lyrics result=parse(value);if(!result.plain().isEmpty()||!result.lines().isEmpty()||result.instrumental()){dir.mkdirs();File[] files=dir.listFiles();if(files!=null&&files.length>=200){Arrays.sort(files,Comparator.comparingLong(File::lastModified));files[0].delete();}try(FileOutputStream out=new FileOutputStream(cache)){out.write(value.toString().getBytes(StandardCharsets.UTF_8));}}return result;
     }
     private static Lyrics parse(JSONObject o){String plain=o.isNull("plainLyrics")?"":o.optString("plainLyrics");String synced=o.isNull("syncedLyrics")?"":o.optString("syncedLyrics");return new Lyrics(plain,LyricsRules.parse(synced),o.optBoolean("instrumental"));}
-    private static String get(String url)throws IOException {HttpURLConnection c=(HttpURLConnection)new URL(url).openConnection();c.setConnectTimeout(12000);c.setReadTimeout(15000);c.setRequestProperty("User-Agent","RadhaMusic/1.4 (https://github.com/DiwashBhatta17/radha-music)");try{int code=c.getResponseCode();if(code==404)throw new FileNotFoundException();if(code!=200)throw new IOException("Lyrics service returned "+code);try(InputStream in=c.getInputStream()){return read(in);}}finally{c.disconnect();}}
+    private static String get(String url)throws IOException {HttpURLConnection c=(HttpURLConnection)new URL(url).openConnection();c.setConnectTimeout(12000);c.setReadTimeout(15000);c.setRequestProperty("User-Agent","RadhaMusic/1.5.1 (https://github.com/DiwashBhatta17/radha-music)");try{int code=c.getResponseCode();if(code==404)throw new FileNotFoundException();if(code!=200)throw new IOException("Lyrics service returned "+code);try(InputStream in=c.getInputStream()){return read(in);}}finally{c.disconnect();}}
     private static String read(InputStream in)throws IOException {ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] chunk=new byte[4096];int n;while((n=in.read(chunk))!=-1){if(out.size()+n>512*1024)throw new IOException("Lyrics response too large");out.write(chunk,0,n);}return out.toString("UTF-8");}
 }

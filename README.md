@@ -2,10 +2,19 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
+## Version 1.5.1 — finalized player and queue
+
+- Rotating-disc player with a visible online Download action, background switch, volume slider, and the full Diwash Bhatta credit.
+- Music buffering uses a small indicator beneath transport controls; video buffering stays centered over the video. Existing buffer/quality settings are preserved.
+- Lyrics availability is checked after the player is ready. Lyrics stays disabled while checking, after failures, for instrumentals and when lyrics are missing; transient failures may retry after one minute. Full-screen lyrics uses 21sp text, a fixed Song progress seek panel, icon controls, and the credit. Advancing to a track without lyrics returns to the player.
+- Up next is a full-screen artwork queue with a current-track card, highlighted next track, durations, shuffle, playback controls, overflow actions and hold-to-drag reordering. Manual reordering switches off shuffle.
+- Speed Dials measures each page against its actual viewport, with three equal-width columns and two rows. From your artists follows Discover more, using matching artists where available and starter recommendations otherwise.
+- Startup no longer dismisses after an arbitrary 15 seconds. It waits for the shared initial list requests and the Home renderer. Open local music remains available without waiting. Home no longer automatically starts a second pagination request after initial loading; Show more still supports explicit pagination.
+
 ## Version 1.5 — approved dark redesign
 
 - Always-dark charcoal/coral theme, compact top spacing, search icon with inline search, and smaller five-tab navigation. Device light mode does not change the app palette.
-- Branded launch screen while the initial Music and Watch lists load after opening the app. It appears once per session, with a 15-second timeout so offline users can reach local media. Shared results survive tab changes.
+- Branded launch screen while the initial Music and Watch lists load after opening the app. It appears once per session, with an Open local music action for offline users. Shared results survive tab changes.
 - Three-column Speed Dials begins with playable recommendations and puts qualifying favorites first as listening accumulates. Quick Picks retains five rows per swipe page. Discover more uses actual track artwork; Watch adds artist discovery and available live-session results. No illustrated mood placeholders, Downloads, or playlist management on Home.
 - Saved contains working Library / Downloads / Playlists filters, album-art collections, saved tracks and completed private downloads. Import/export remains in Settings.
 - Larger artwork on the rotating disc, clean Lyrics / Up next actions and background control. Full-screen lyrics has album artwork, large highlighted text, timeline seeking and icon controls.
@@ -29,7 +38,7 @@ Created, designed and developed by **Diwash Bhatta**.
 
 Open **Lyrics** in the music player. Synced lyrics highlight the current line and scroll with playback; tapping a timed line seeks to it. Manual scrolling pauses automatic scrolling briefly. Plain lyrics appear when timing is unavailable, and missing lyrics have an explicit empty state. Previous/next and pause remain available.
 
-Lyrics are supplied by [LRCLIB](https://lrclib.net). Opening lyrics sends the song title, artist and duration to that service. Matching requires the same title/artist and, when known, a similar duration. Availability and metadata quality vary. Returned lyrics are cached privately, with automatic age and size limits; cached lyrics work offline.
+Lyrics are supplied by [LRCLIB](https://lrclib.net). Checking lyrics availability sends the song title, artist and duration to that service. Matching requires the same title/artist and, when known, a similar duration. Availability and metadata quality vary. Returned lyrics are cached privately, with automatic age and size limits; cached lyrics work offline.
 
 ### App-only downloads
 
