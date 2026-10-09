@@ -2,9 +2,10 @@ plugins { id 'com.android.application' }
 android {
     namespace 'com.radha.music'
     compileSdk 35
-    defaultConfig { applicationId 'com.radha.music'; minSdk 26; targetSdk 35; versionCode 5; versionName '1.3.1' }
+    defaultConfig { applicationId 'com.radha.music'; minSdk 26; targetSdk 35; versionCode 6; versionName '1.3.2' }
     compileOptions { coreLibraryDesugaringEnabled true; sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     signingConfigs { debug { if (rootProject.file('.local/debug.keystore').exists()) { storeFile rootProject.file('.local/debug.keystore') } } }
+    testOptions { unitTests.includeAndroidResources = true; unitTests.all { systemProperty 'maven.repo.local', new File(gradle.gradleUserHomeDir, 'robolectric').absolutePath; systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2' } }
     buildTypes { release { minifyEnabled false } }
 }
 dependencies {
@@ -14,4 +15,5 @@ dependencies {
     implementation 'androidx.media3:media3-ui:1.8.0'
     implementation 'androidx.media3:media3-session:1.8.0'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.14.1'
 }

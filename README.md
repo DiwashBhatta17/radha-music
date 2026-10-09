@@ -2,6 +2,14 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
+## Version 1.3.2 — visible online results and Android UI coverage
+
+- Online now places Quick picks, loading status, results and connection errors above the decorative mix cards. Watch uses the same result panel.
+- An explicit Search button submits online queries alongside the keyboard Search action.
+- Search completion and timeout callbacks use the main Android looper, independent of whether the view was attached when the worker completed. Closing a screen cancels its callbacks.
+- Android UI regression tests exercise request startup, visible failure actions, successful song rows, replacement search, retry recovery and empty results. These run with Robolectric, without installing an emulator.
+- This addresses result/error visibility. A desktop API check or Robolectric test does not establish that the reported zero-data condition on the user's physical phone is resolved.
+
 ## Version 1.3.1 — online search recovery and diagnostics
 
 - If music-specific search fails or returns no playable results, the app tries regular YouTube video search and plays those results as audio in Online. Watch remains video playback.
@@ -58,7 +66,7 @@ An Android local and online music and video player. Supports Android 8.0 (API 26
 
 ## Install the APK
 
-1. Transfer **Radha-Music-v1.3.1.apk** to your Android phone and open it from Files.
+1. Transfer **Radha-Music-v1.3.2.apk** to your Android phone and open it from Files.
 2. If asked, allow that file manager to install unknown apps, then install.
 3. Open **Radha Music** and allow music/audio and video access. Choose all videos if you want your complete library.
 4. Open Videos for source folders, or Music for songs with the newest additions first.
