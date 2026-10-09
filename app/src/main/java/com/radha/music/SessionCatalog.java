@@ -40,6 +40,7 @@ final class SessionCatalog {
         return new OnlineClient.Results(tracks,tail.query(),tail.next(),fallback);
     }
     OnlineClient.Results search(String q,boolean watch)throws Exception{return await(searchTask(q,watch));}
+    synchronized OnlineClient.Results peek(String q,boolean watch){FutureTask<OnlineClient.Results> ready=requests.get((watch?"video:":"music:")+q);if(ready==null||!ready.isDone())return null;try{return ready.get();}catch(Exception e){return null;}}
     OnlineClient.Results more(OnlineClient.Results previous)throws Exception{return await(task(previous,()->backend.more(previous)));}
     synchronized FutureTask<OnlineClient.Results> task(Object key,Callable<OnlineClient.Results> work){
         FutureTask<OnlineClient.Results> existing=requests.get(key);if(existing!=null)return existing;

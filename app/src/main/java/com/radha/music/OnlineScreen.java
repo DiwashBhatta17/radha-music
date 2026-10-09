@@ -52,11 +52,17 @@ public final class OnlineScreen extends LinearLayout {
     public void search(String value){if(value.trim().isEmpty()){showHome();return;}query=value.trim();homeMode=false;body.removeAllViews();body.addView(action("‹ Discover",this::showHome));gap(14);body.addView(text(query,23,ink,true));gap(14);body.addView(results);scroll.scrollTo(0,0);load(query,false);}
     private void load(String q,boolean append){
         if(closed)return;if(request!=null)request.cancel(true);int token=++generation;busy=true;if(!append){tracks.clear();result=null;results.removeAllViews();}
+        if(!append&&source==YOUTUBE){OnlineClient.Results cached=SessionCatalog.INSTANCE.peek(q,watch);if(cached!=null){accept(cached,q);return;}}
         RadhaLoadingView loading=new RadhaLoadingView(getContext());results.addView(loading,new LayoutParams(-1,dp(56)));OnlineClient.Results previous=result;
-        request=worker.submit(()->{try{OnlineClient.Results found=append?source.more(previous):source.search(q,watch);List<MediaEntry> batch=new ArrayList<>();for(OnlineClient.Track t:found.tracks())batch.add(new MediaEntry(OnlineRules.mediaId(t.url(),watch),t.name(),"YouTube",t.artist(),watch,t.seconds()*1000,System.currentTimeMillis()/1000,t.image()));
-            main.post(()->{if(closed||token!=generation)return;busy=false;result=found;Set<String> seen=new HashSet<>();for(MediaEntry e:tracks)seen.add(e.id);for(MediaEntry e:batch)if(seen.add(e.id))tracks.add(e);store.remember(batch);renderResults();if(homeMode&&!watch&&tracks.size()<25&&OnlineClient.hasMore(result)&&autoPages++<4)load(q,true);});
+        request=worker.submit(()->{try{OnlineClient.Results found=append?source.more(previous):source.search(q,watch);
+            main.post(()->{if(closed||token!=generation)return;accept(found,q);});
         }catch(Exception|LinkageError error){main.post(()->{if(closed||token!=generation)return;busy=false;results.removeView(loading);failed(error,q);});}});
         main.postDelayed(()->{if(closed||!busy||token!=generation)return;busy=false;generation++;request.cancel(true);results.removeView(loading);failed(new java.net.SocketTimeoutException("Search exceeded 90 seconds"),q);},90000);
+    }
+    private void accept(OnlineClient.Results found,String q){
+        busy=false;result=found;List<MediaEntry> batch=new ArrayList<>();Set<String> seen=new HashSet<>();for(MediaEntry e:tracks)seen.add(e.id);
+        for(OnlineClient.Track t:found.tracks()){MediaEntry e=new MediaEntry(OnlineRules.mediaId(t.url(),watch),t.name(),"YouTube",t.artist(),watch,t.seconds()*1000,System.currentTimeMillis()/1000,t.image());batch.add(e);if(seen.add(e.id))tracks.add(e);}
+        store.remember(batch);renderResults();if(homeMode&&!watch&&tracks.size()<25&&OnlineClient.hasMore(result)&&autoPages++<4)load(q,true);
     }
     private void renderResults(){results.removeAllViews();if(tracks.isEmpty()){results.addView(text("No results. Try a different artist or title.",15,muted,false));return;}
         if(homeMode&&!watch){List<View> pages=new ArrayList<>();for(List<MediaEntry> page:DiscoveryRules.pages(tracks,5,5)){LinearLayout panel=column();for(MediaEntry e:page)panel.addView(trackRow(e));pages.add(panel);}results.addView(pager(pages));}

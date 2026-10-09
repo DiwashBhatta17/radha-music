@@ -4,15 +4,15 @@ Created, designed and developed by **Diwash Bhatta**.
 
 - Version code 8; application ID `com.radha.music`; Android 8/API 26 minimum, target/compile SDK 35.
 - Built October 9, 2026 with JDK 17, Gradle 8.11.1, AGP 8.9.1 and Android Build Tools 35.0.0.
-- Final `assembleDebug`, `testDebugUnitTest`, `lintDebug`: successful. **44 tests passed**, zero failures. Lint: zero errors, 37 warnings (primarily existing allocation, accessibility, RTL, formatting and dependency-update suggestions).
+- Final `assembleDebug`, `testDebugUnitTest`, `lintDebug`: successful. **45 tests passed**, zero failures. Lint: zero errors, 37 warnings (primarily existing allocation, accessibility, RTL, formatting and dependency-update suggestions).
 - Packaged-DEX URL compatibility check passes: unsupported platform Charset URL codec references are absent; the replacement implementations are bundled. The Android 11 fix remains intact.
 - Signature verification passed; certificate SHA-256 unchanged: `5d51b9604140d46dc9bddc2e6e5395408d88148a8e16205e014908deb8f30d60`.
-- APK SHA-256: 052B5C96D4CBCD7D41734DB77A1619EAF30B1277E6B2A6DFB514B4369DCAF30C.
+- APK SHA-256: 4530210DE9DA86D7AABACD6B35C3E07753244F754BA6A67DD484E48E2F00E258.
 - Signing keys, generated builds and local SDK paths are excluded from GitHub and the source ZIP. Build caches and test dependencies remain on D:.
 
 ## Verification coverage
 
-- Session cache: shared in-flight requests, page exit does not cancel shared fetching, revisit reuse, failure retry and fresh-session reset.
+- Session cache: shared in-flight requests, page exit does not cancel shared fetching, revisit reuse and immediate cached access, failure retry and fresh-session reset.
 - Recommendations: combines frequent/recent artists and chosen preferences, alternates sources, removes duplicates and tolerates a failed source.
 - Retention: 15-day recent-history expiry preserves compact taste totals, saved songs and Speed Dials; expired lyrics cleanup preserves private downloads.
 

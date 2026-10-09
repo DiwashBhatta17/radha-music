@@ -7,6 +7,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 
 public class SessionCatalogTest {
+ @Test public void completedPageIsImmediatelyAvailableWithoutAnotherFetch()throws Exception{
+  AtomicInteger calls=new AtomicInteger();SessionCatalog cache=new SessionCatalog(new SessionCatalog.Backend(){public OnlineClient.Results search(String q,boolean w){calls.incrementAndGet();return result();}public OnlineClient.Results more(OnlineClient.Results p){throw new AssertionError();}});
+  assertNull(cache.peek("artist",false));OnlineClient.Results loaded=cache.search("artist",false);assertSame(loaded,cache.peek("artist",false));assertSame(loaded,cache.search("artist",false));assertEquals(1,calls.get());
+ }
  private OnlineClient.Results result(){return new OnlineClient.Results(Collections.emptyList(),null,null,false);}
  @Test public void revisitingAndConcurrentWaitersShareOneFetch()throws Exception{
   SessionCatalog cache=new SessionCatalog();AtomicInteger calls=new AtomicInteger();CountDownLatch release=new CountDownLatch(1);
