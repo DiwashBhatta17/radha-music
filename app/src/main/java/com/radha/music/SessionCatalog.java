@@ -17,14 +17,18 @@ final class SessionCatalog {
     private final Map<Object,FutureTask<OnlineClient.Results>> requests=new LinkedHashMap<>();
     private String preference,musicSeed,watchSeed;
     private List<String> musicQueries=Collections.emptyList(),watchQueries=Collections.emptyList();
+    private final List<FutureTask<OnlineClient.Results>> startup=new ArrayList<>();
+    private boolean startupShown;
+    synchronized boolean takeStartup(){if(startupShown)return false;startupShown=true;return true;}
+    synchronized boolean startupReady(){return !startup.isEmpty()&&startup.stream().allMatch(FutureTask::isDone);}
     synchronized String seed(OnlineStore store,boolean watch){
         if(musicSeed==null||!Objects.equals(preference,store.preference())){
-            requests.clear();preference=store.preference();musicQueries=store.recommendationQueries(false);watchQueries=store.recommendationQueries(true);
+            requests.clear();preference=store.preference();musicQueries=store.recommendationQueries(false);watchQueries=new ArrayList<>(store.recommendationQueries(true));watchQueries.add(store.preference()+" live music sessions");
             musicSeed=musicQueries.get(0);watchSeed=watchQueries.get(0);
         }
         return watch?watchSeed:musicSeed;
     }
-    void warm(OnlineStore store){for(boolean watch:new boolean[]{false,true})searchTask(seed(store,watch),watch);}
+    synchronized void warm(OnlineStore store){if(startup.isEmpty())for(boolean watch:new boolean[]{false,true})startup.add(searchTask(seed(store,watch),watch));}
     private synchronized FutureTask<OnlineClient.Results> searchTask(String q,boolean watch){
         boolean home=q.equals(watch?watchSeed:musicSeed);List<String> queries=new ArrayList<>(watch?watchQueries:musicQueries);
         return task((watch?"video:":"music:")+q,()->home?recommend(queries,watch):backend.search(q,watch));
@@ -49,5 +53,5 @@ final class SessionCatalog {
         requests.put(key,created);workers.execute(created);return created;
     }
     static OnlineClient.Results await(FutureTask<OnlineClient.Results> task)throws Exception{try{return task.get();}catch(ExecutionException e){Throwable cause=e.getCause();if(cause instanceof Error)throw (Error)cause;if(cause instanceof Exception)throw (Exception)cause;throw new RuntimeException(cause);}}
-    synchronized void reset(){requests.clear();preference=null;musicSeed=null;watchSeed=null;musicQueries=Collections.emptyList();watchQueries=Collections.emptyList();}
+    synchronized void reset(){requests.clear();startup.clear();startupShown=false;preference=null;musicSeed=null;watchSeed=null;musicQueries=Collections.emptyList();watchQueries=Collections.emptyList();}
 }

@@ -1,16 +1,19 @@
-# Radha Music 1.4
+# Radha Music 1.5
 
 Created, designed and developed by **Diwash Bhatta**.
 
-- Version code 8; application ID `com.radha.music`; Android 8/API 26 minimum, target/compile SDK 35.
+- Version code 9; application ID `com.radha.music`; Android 8/API 26 minimum, target/compile SDK 35.
 - Built October 9, 2026 with JDK 17, Gradle 8.11.1, AGP 8.9.1 and Android Build Tools 35.0.0.
-- Final `assembleDebug`, `testDebugUnitTest`, `lintDebug`: successful. **45 tests passed**, zero failures. Lint: zero errors, 37 warnings (primarily existing allocation, accessibility, RTL, formatting and dependency-update suggestions).
+- Final `assembleDebug`, `testDebugUnitTest`, `lintDebug`: successful. **48 tests passed**, zero failures. Lint: zero errors, 40 warnings (primarily existing allocation, accessibility, RTL, formatting and dependency-update suggestions).
 - Packaged-DEX URL compatibility check passes: unsupported platform Charset URL codec references are absent; the replacement implementations are bundled. The Android 11 fix remains intact.
 - Signature verification passed; certificate SHA-256 unchanged: `5d51b9604140d46dc9bddc2e6e5395408d88148a8e16205e014908deb8f30d60`.
-- APK SHA-256: 4530210DE9DA86D7AABACD6B35C3E07753244F754BA6A67DD484E48E2F00E258.
+- APK SHA-256: ADE5B13DF377543ED38349FBA71A38E7BC5A744958C2AC869834F265C1BA1744.
 - Signing keys, generated builds and local SDK paths are excluded from GitHub and the source ZIP. Build caches and test dependencies remain on D:.
 
 ## Verification coverage
+
+- Dark redesign: starter Speed Dials, Discover more, no Home playlist-management section, compact header under light device configuration, Saved filters, music-player controls and cancellation of pending playback intent. Native Android view rendering through Robolectric was inspected for Home, Saved and the player using test fixtures.
+- Startup loading waits for shared launch requests, with a 15-second fallback. Phone network latency and real provider buffering have not been benchmarked. Buffer thresholds are now 750 ms start / 1500 ms after stalls; speculative next-stream resolving is removed.
 
 - Session cache: shared in-flight requests, page exit does not cancel shared fetching, revisit reuse and immediate cached access, failure retry and fresh-session reset.
 - Recommendations: combines frequent/recent artists and chosen preferences, alternates sources, removes duplicates and tolerates a failed source.
@@ -26,11 +29,11 @@ Created, designed and developed by **Diwash Bhatta**.
 - Settings/library: import/export absent from the home screen and present in Settings; Add to library persists correctly.
 - Existing local filtering, seeking, queue, volume, URL validation and online error checks remain passing.
 
-Android UI tests run through Robolectric API 28 on the desktop. No emulator or physical device was used. These checks do not establish physical-phone decoding, actual lyric coverage for every song, background-download survival under every OEM policy, or exact visual rendering on the user's device.
+Android UI tests run through Robolectric API 28 on the desktop. No emulator or physical device was used. These checks do not establish physical-phone decoding, actual lyric coverage for every song, background-download survival under every OEM policy, or exact physical-device visual rendering on the user's device.
 
 ## Phone verification
 
-Install v1.4 over v1.3.3. Test a song three times for at least 30 seconds each; it should appear in Speed Dials. More-played tracks should rank first. Swipe the three-column grid and five-row Quick Picks.
+Install v1.5 over the existing Radha Music installation. Test a song three times for at least 30 seconds each; it should appear in Speed Dials. More-played tracks should rank first. Swipe the three-column grid and five-row Quick Picks.
 
 Open Lyrics from a supported song. Check highlighting, seeking and previous/next. Play portrait and landscape videos, rotate explicitly and verify fullscreen keeps the chosen orientation.
 

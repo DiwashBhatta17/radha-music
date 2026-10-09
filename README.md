@@ -2,17 +2,26 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
-## Version 1.4 — discovery, lyrics, private downloads and portable backups
+## Version 1.5 — approved dark redesign
+
+- Always-dark charcoal/coral theme, compact top spacing, search icon with inline search, and smaller five-tab navigation. Device light mode does not change the app palette.
+- Branded launch screen while the initial Music and Watch lists load after opening the app. It appears once per session, with a 15-second timeout so offline users can reach local media. Shared results survive tab changes.
+- Three-column Speed Dials begins with playable recommendations and puts qualifying favorites first as listening accumulates. Quick Picks retains five rows per swipe page. Discover more uses actual track artwork; Watch adds artist discovery and available live-session results. No illustrated mood placeholders, Downloads, or playlist management on Home.
+- Saved contains working Library / Downloads / Playlists filters, album-art collections, saved tracks and completed private downloads. Import/export remains in Settings.
+- Larger artwork on the rotating disc, clean Lyrics / Up next actions and background control. Full-screen lyrics has album artwork, large highlighted text, timeline seeking and icon controls.
+- Playback: start threshold 750 ms, rebuffer threshold 1.5 seconds, buffer up to 60 seconds with a 64 MiB target. Removed speculative next-track network work. Play taps made while the service connects are retained; tapping the active track does not rebuild its queue. The pause button correctly reflects requested playback while buffering, and resuming does not prepare an already prepared player again. These changes do not guarantee instantaneous playback or eliminate provider/network stalls.
+
+## Discovery, lyrics, private downloads and portable backups
 
 ### Online Music and Watch
 
 - **Learns from listening:** Quick Picks blends your most-played artist, recent artists, and chosen preferences. Results alternate between sources and duplicate videos are removed. A listen qualifies after 30 seconds. This is an on-device taste profile with search-based discovery, not imported YouTube history or its private recommendation algorithm.
-- **One load per session:** Music and Watch preload at launch. Returning to a tab reuses shared results, including in-flight requests. Recommendations refresh on a fresh session or preference change. Page caches live in memory; cached pages render immediately and artwork requests are deduplicated. Playback buffers up to 90 seconds with a 64 MiB target and waits for 5 seconds of buffered media after a stall. When at least 15 seconds are buffered and auto-next is enabled, the next queued online stream link is prepared in advance (metadata only, no media download). Server throttling or poor connections can still cause buffering.
+- **One load per session:** Music and Watch preload at launch. Returning to a tab reuses shared results, including in-flight requests. Recommendations refresh on a fresh session or preference change. Page caches live in memory; cached pages render immediately and artwork requests are deduplicated. Playback uses the v1.5 buffer settings above. Server throttling or poor connections can still cause buffering.
 
-- **Speed Dials:** online songs qualify after three listens of at least 30 seconds. Higher play counts come first; ties use the most recent listen. Three columns and two rows per swipe page, up to five pages (30 songs). Counts persist on the device and are included in backups. Per-song counting starts with this version; older artist totals cannot reconstruct past per-song plays.
+- **Speed Dials:** starter suggestions fill unused slots; personal favorites qualify after three listens of at least 30 seconds. Higher play counts come first; ties use the most recent listen. Three columns and two rows per swipe page, up to five pages (30 songs). Counts persist on the device and are included in backups. Per-song counting starts with this version; older artist totals cannot reconstruct past per-song plays.
 - **Quick Picks:** five song rows per horizontal page, up to five pages. The app fetches another result page when needed; fewer cards appear if the source has fewer results. **Show more** opens the full list and further pagination.
 - **Forgotten Favorites:** songs played at least twice and not heard for 14 days. No invented history or placeholder songs are inserted. Song/video cards and user playlists scroll horizontally.
-- **Made for you:** mood cards open real searches using your listening preferences. These are discovery searches, not imported YouTube playlists or YouTube's recommendation model.
+- **Discover more:** artwork-led song and video rails use the session recommendation results.
 - **Add to library:** available in online item menus. Open **Saved → My library** for your saved songs and videos. Saving metadata does not itself download the media.
 - Loading lists and buffering video use the coral Radha logo spinner. Video opens in portrait; the rotation control explicitly switches portrait/landscape. Decoder dimensions and fullscreen no longer override that choice. Original aspect ratio remains fitted to the screen.
 
@@ -24,7 +33,7 @@ Lyrics are supplied by [LRCLIB](https://lrclib.net). Opening lyrics sends the so
 
 ### App-only downloads
 
-Use **Download for offline** in an online song/video menu or the player download action. Downloads are stored under Radha's private `files/downloads` directory, not the public Downloads folder or MediaStore. Access them through **Downloads** in Online/Watch or Saved. Other normal apps cannot browse this private folder; uninstalling Radha removes it unless you first export a backup.
+Use **Download for offline** in an online song/video menu or the player download action. Downloads are stored under Radha's private `files/downloads` directory, not the public Downloads folder or MediaStore. Access them through **Downloads** in Saved. Other normal apps cannot browse this private folder; uninstalling Radha removes it unless you first export a backup.
 
 - Music downloads its available audio stream. Video downloads its video and audio streams and plays them together offline, or uses a combined stream when available. Files are not transcoded.
 - Downloads run one at a time with a foreground notification showing progress and cancellation. Incomplete transfers are not marked downloaded; failure/cancellation offers retry. Automatic resume after process termination is not implemented.

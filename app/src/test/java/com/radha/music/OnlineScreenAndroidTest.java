@@ -35,7 +35,7 @@ public class OnlineScreenAndroidTest {
    assertTrue("Online did not start a request",requested.await(8,TimeUnit.SECONDS));
    View root=activity.findViewById(android.R.id.content);
    awaitText(root,"Error details");layout(root);
-   assertVisible(root,"Retry search");assertVisible(root,"Error details");assertNotNull(find(root,"Search"));
+   assertVisible(root,"Retry search");assertVisible(root,"Error details");assertNotNull(description(root,"Search"));
   }finally{NewPipe.init(new OnlineClient.Network());}
  }
  @Test public void automaticResultsAreVisibleAndSearchReplacesThem()throws Exception {
