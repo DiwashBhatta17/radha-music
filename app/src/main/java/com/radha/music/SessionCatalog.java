@@ -16,6 +16,7 @@ final class SessionCatalog {
     private final ExecutorService workers=Executors.newFixedThreadPool(2,r->{Thread t=new Thread(r,"Radha catalog");t.setDaemon(true);return t;});
     private final Map<Object,FutureTask<OnlineClient.Results>> requests=new LinkedHashMap<>();
     private String preference,musicSeed,watchSeed;
+    private List<OnlineClient.Track> musicTaste=Collections.emptyList(),watchTaste=Collections.emptyList();
     private List<String> musicQueries=Collections.emptyList(),watchQueries=Collections.emptyList();
     private final List<FutureTask<OnlineClient.Results>> startup=new ArrayList<>();
     private boolean startupShown;
@@ -23,7 +24,7 @@ final class SessionCatalog {
     synchronized boolean startupReady(){return !startup.isEmpty()&&startup.stream().allMatch(FutureTask::isDone);}
     synchronized String seed(OnlineStore store,boolean watch){
         if(musicSeed==null||!Objects.equals(preference,store.preference())){
-            requests.clear();preference=store.preference();musicQueries=store.recommendationQueries(false);watchQueries=new ArrayList<>(store.recommendationQueries(true));watchQueries.add(store.preference()+" live music sessions");
+            requests.clear();musicTaste=store.tasteTracks(false);watchTaste=store.tasteTracks(true);preference=store.preference();musicQueries=store.recommendationQueries(false);watchQueries=new ArrayList<>(store.recommendationQueries(true));watchQueries.add(store.preference()+" live music sessions");
             musicSeed=musicQueries.get(0);watchSeed=watchQueries.get(0);
         }
         return watch?watchSeed:musicSeed;
@@ -34,7 +35,7 @@ final class SessionCatalog {
         return task((watch?"video:":"music:")+q,()->home?recommend(queries,watch):backend.search(q,watch));
     }
     OnlineClient.Results recommend(List<String> queries,boolean watch)throws Exception{
-        List<List<OnlineClient.Track>> groups=new ArrayList<>();OnlineClient.Results first=null;Exception failure=null;boolean fallback=false;
+        List<List<OnlineClient.Track>> groups=new ArrayList<>();List<OnlineClient.Track> taste=watch?watchTaste:musicTaste;if(!taste.isEmpty())groups.add(taste);OnlineClient.Results first=null;Exception failure=null;boolean fallback=false;
         for(String query:queries){try{OnlineClient.Results found=backend.search(query,watch);if(first==null)first=found;groups.add(found.tracks());fallback|=found.fallback();}catch(Exception e){failure=e;}}
         if(first==null)throw failure==null?new java.io.IOException("No recommendations available"):failure;
         List<OnlineClient.Track> tracks=RecommendationRules.mix(groups);OnlineClient.Results tail=first;
@@ -53,5 +54,5 @@ final class SessionCatalog {
         requests.put(key,created);workers.execute(created);return created;
     }
     static OnlineClient.Results await(FutureTask<OnlineClient.Results> task)throws Exception{try{return task.get();}catch(ExecutionException e){Throwable cause=e.getCause();if(cause instanceof Error)throw (Error)cause;if(cause instanceof Exception)throw (Exception)cause;throw new RuntimeException(cause);}}
-    synchronized void reset(){requests.clear();startup.clear();startupShown=false;preference=null;musicSeed=null;watchSeed=null;musicQueries=Collections.emptyList();watchQueries=Collections.emptyList();}
+    synchronized void reset(){requests.clear();startup.clear();startupShown=false;musicTaste=Collections.emptyList();watchTaste=Collections.emptyList();preference=null;musicSeed=null;watchSeed=null;musicQueries=Collections.emptyList();watchQueries=Collections.emptyList();}
 }

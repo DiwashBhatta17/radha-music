@@ -16,8 +16,17 @@ public final class OnlineClient {
     public record Track(String url,String name,String artist,String image,long seconds) {}
     public record Results(List<Track> tracks,SearchQueryHandler query,Page next,boolean fallback) {}
     public record Streams(String audio,String video,String muxed,long created) {}
+    private record Radio(List<Track> tracks,long created){}
+    private static final Map<String,Radio> musicRadios=new LinkedHashMap<>();
+    public static List<Track> musicRadio(String id)throws IOException{
+        String key=OnlineRules.videoId(id);if(key==null)throw new IOException("Invalid online media ID");
+        synchronized(OnlineClient.class){Radio saved=musicRadios.get(key);if(saved!=null&&System.currentTimeMillis()-saved.created()<10*60*1000)return new ArrayList<>(saved.tracks());}
+        try{init();org.schabi.newpipe.extractor.playlist.PlaylistInfo info=org.schabi.newpipe.extractor.playlist.PlaylistInfo.getInfo(ServiceList.YouTube,"https://www.youtube.com/watch?v="+key+"&list=RDAMVM"+key);List<Track> found=tracks(info.getRelatedItems());if(found.isEmpty())throw new IOException("No music radio available");synchronized(OnlineClient.class){if(musicRadios.size()>=24)musicRadios.remove(musicRadios.keySet().iterator().next());musicRadios.put(key,new Radio(found,System.currentTimeMillis()));}return found;}catch(Exception e){throw new IOException("Music radio unavailable",e);}
+    }
     private static boolean initialized;
     private static final Map<String,Streams> cache=new LinkedHashMap<>();
+    private static final Map<String,List<Track>> related=new LinkedHashMap<>();
+    public static List<Track> related(String id)throws IOException{resolve(id);synchronized(OnlineClient.class){return new ArrayList<>(related.getOrDefault(OnlineRules.videoId(id),Collections.emptyList()));}}
     private static final java.util.concurrent.ConcurrentHashMap<String,java.util.concurrent.FutureTask<Streams>> resolving=new java.util.concurrent.ConcurrentHashMap<>();
     public static synchronized void init(){if(!initialized){NewPipe.init(new Network(),new Localization("en","IN"));initialized=true;}}
     public static Results search(String text,boolean video) throws Exception {
@@ -67,7 +76,7 @@ public final class OnlineClient {
             VideoStream video=bestVideo(info.getVideoOnlyStreams()),muxed=bestVideo(info.getVideoStreams());
             if(audio==null&&muxed==null)throw new IOException("No playable stream is currently available");
             Streams result=new Streams(audio==null?null:audio.getContent(),video==null?null:video.getContent(),muxed==null?null:muxed.getContent(),System.currentTimeMillis());
-            synchronized(OnlineClient.class){if(cache.size()>=24)cache.remove(cache.keySet().iterator().next());cache.put(key,result);}return result;
+            synchronized(OnlineClient.class){if(cache.size()>=24){String oldest=cache.keySet().iterator().next();cache.remove(oldest);related.remove(oldest);}cache.put(key,result);related.put(key,tracks(info.getRelatedItems()));}return result;
         }catch(Exception|LinkageError e){if(e instanceof InterruptedException)Thread.currentThread().interrupt();throw new IOException("YouTube could not provide this stream. Retry later or open it in YouTube.",e);}
     }
     public static synchronized void invalidate(String id){cache.remove(OnlineRules.videoId(id));}

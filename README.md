@@ -2,6 +2,15 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
+## Version 1.5.2 — related radio and personal discovery
+
+- Selecting an online search result or Home card starts that track immediately, then builds Up next separately. Song searches keep their matching versions; automatic queues filter repeat versions, covers, karaoke and reactions, and limit repeated artists. Home no longer queues the entire fetched catalog. Explicit saved playlists still use their chosen order.
+- Broad searches such as Indian party songs retain that context in radio and future recommendations. Individual songs use provider music-radio mixes, with artist search as a fallback. Recent song radios blend with other listening tastes in For you; returning Home can mix newly learned tracks into the cached page without another fetch. This is a local recommendation profile, not YouTube account access or guaranteed mood classification.
+- Speed Dials now qualifies on the first explicitly searched, selected and completed track. Home cards, discovery chips and Up next do not qualify. Natural completion plus at least 95% unique playback coverage is required; seeking to the end, replaying a partial segment or skipping does not qualify. Qualified completions rank by frequency, then recency. Starter suggestions appear only before the first qualifying completion. Old play counts cannot prove search origin and are not migrated into this list.
+- Discover more is followed by content-driven horizontal rails: Favorites, Forgotten Favorites, Listen again, From your artists, Turn it up, Acoustic moments, Live sessions, Explore artists and More to explore. Empty sections are omitted; saved/download management remains in Saved.
+- The startup screen contains only Radha branding, a progress animation and the creator credit. The Open local music link is removed. Startup normally waits for the initial lists; a 90-second failure bound prevents an unreachable provider from trapping the user.
+- Compact completion and related-radio preferences stay on device and travel with Settings backups. Three-column Speed Dials, approved dark player/lyrics designs, background opt-in, Android 11 compatibility and the Diwash Bhatta credit are preserved.
+
 ## Version 1.5.1 — finalized player and queue
 
 - Rotating-disc player with a visible online Download action, background switch, volume slider, and the full Diwash Bhatta credit.
@@ -9,12 +18,12 @@ Created, designed and developed by **Diwash Bhatta**.
 - Lyrics availability is checked after the player is ready. Lyrics stays disabled while checking, after failures, for instrumentals and when lyrics are missing; transient failures may retry after one minute. Full-screen lyrics uses 21sp text, a fixed Song progress seek panel, icon controls, and the credit. Advancing to a track without lyrics returns to the player.
 - Up next is a full-screen artwork queue with a current-track card, highlighted next track, durations, shuffle, playback controls, overflow actions and hold-to-drag reordering. Manual reordering switches off shuffle.
 - Speed Dials measures each page against its actual viewport, with three equal-width columns and two rows. From your artists follows Discover more, using matching artists where available and starter recommendations otherwise.
-- Startup no longer dismisses after an arbitrary 15 seconds. It waits for the shared initial list requests and the Home renderer. Open local music remains available without waiting. Home no longer automatically starts a second pagination request after initial loading; Show more still supports explicit pagination.
+- Startup no longer dismisses after an arbitrary 15 seconds. It waits for the shared initial list requests and the Home renderer. The local-music shortcut from this version was removed in v1.5.2. Home no longer automatically starts a second pagination request after initial loading; Show more still supports explicit pagination.
 
 ## Version 1.5 — approved dark redesign
 
 - Always-dark charcoal/coral theme, compact top spacing, search icon with inline search, and smaller five-tab navigation. Device light mode does not change the app palette.
-- Branded launch screen while the initial Music and Watch lists load after opening the app. It appears once per session, with an Open local music action for offline users. Shared results survive tab changes.
+- Branded launch screen while the initial Music and Watch lists load after opening the app. It appears once per session. Shared results survive tab changes.
 - Three-column Speed Dials begins with playable recommendations and puts qualifying favorites first as listening accumulates. Quick Picks retains five rows per swipe page. Discover more uses actual track artwork; Watch adds artist discovery and available live-session results. No illustrated mood placeholders, Downloads, or playlist management on Home.
 - Saved contains working Library / Downloads / Playlists filters, album-art collections, saved tracks and completed private downloads. Import/export remains in Settings.
 - Larger artwork on the rotating disc, clean Lyrics / Up next actions and background control. Full-screen lyrics has album artwork, large highlighted text, timeline seeking and icon controls.
@@ -27,7 +36,7 @@ Created, designed and developed by **Diwash Bhatta**.
 - **Learns from listening:** Quick Picks blends your most-played artist, recent artists, and chosen preferences. Results alternate between sources and duplicate videos are removed. A listen qualifies after 30 seconds. This is an on-device taste profile with search-based discovery, not imported YouTube history or its private recommendation algorithm.
 - **One load per session:** Music and Watch preload at launch. Returning to a tab reuses shared results, including in-flight requests. Recommendations refresh on a fresh session or preference change. Page caches live in memory; cached pages render immediately and artwork requests are deduplicated. Playback uses the v1.5 buffer settings above. Server throttling or poor connections can still cause buffering.
 
-- **Speed Dials:** starter suggestions fill unused slots; personal favorites qualify after three listens of at least 30 seconds. Higher play counts come first; ties use the most recent listen. Three columns and two rows per swipe page, up to five pages (30 songs). Counts persist on the device and are included in backups. Per-song counting starts with this version; older artist totals cannot reconstruct past per-song plays.
+- **Speed Dials:** first completed explicit search selection qualifies. Home and Up next plays do not. Completion counts rank highest first with recent ties; starter suggestions are used only before any qualified songs exist. Three columns, two rows per page, up to five pages. Preferences persist locally and in backups.
 - **Quick Picks:** five song rows per horizontal page, up to five pages. The app fetches another result page when needed; fewer cards appear if the source has fewer results. **Show more** opens the full list and further pagination.
 - **Forgotten Favorites:** songs played at least twice and not heard for 14 days. No invented history or placeholder songs are inserted. Song/video cards and user playlists scroll horizontally.
 - **Discover more:** artwork-led song and video rails use the session recommendation results.

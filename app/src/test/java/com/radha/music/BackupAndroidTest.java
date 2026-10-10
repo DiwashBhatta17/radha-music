@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 @RunWith(RobolectricTestRunner.class) @Config(sdk=28)
 public class BackupAndroidTest {
  @Test public void roundTripRestoresPreferencesHistoryLibraryAndPrivateDownload()throws Exception {
-  Application c=RuntimeEnvironment.getApplication();OnlineStore online=new OnlineStore(c);online.preference("Nepali acoustic");MediaEntry entry=new MediaEntry("radha://youtube/abcdefghijk/audio","Test song","YouTube","Artist",false,100000,1);online.toggleSaved(entry);online.listened(entry);online.listened(entry);online.listened(entry);
+  Application c=RuntimeEnvironment.getApplication();OnlineStore online=new OnlineStore(c);online.preference("Nepali acoustic");MediaEntry entry=new MediaEntry("radha://youtube/abcdefghijk/audio","Test song","YouTube","Artist",false,100000,1);online.completedSearch(entry);online.toggleSaved(entry);online.listened(entry);online.listened(entry);online.listened(entry);
   DownloadStore downloads=new DownloadStore(c);byte[] bytes={1,2,3,4};try(FileOutputStream out=new FileOutputStream(downloads.file(entry.id,"audio"))){out.write(bytes);}downloads.complete(entry,true,false);
   LibraryStore library=new LibraryStore(c);library.favorites.add(entry.id);library.playlists.put("Travel",new java.util.ArrayList<>(java.util.Collections.singletonList(entry)));library.save();ByteArrayOutputStream backup=new ByteArrayOutputStream();BackupStore.exportTo(c,backup);
   online.preference("Changed");online.clearHistory();online.toggleSaved(entry);downloads.remove(entry.id);library.favorites.clear();library.playlists.clear();library.save();BackupStore.importFrom(c,new ByteArrayInputStream(backup.toByteArray()));

@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 @RunWith(RobolectricTestRunner.class) @Config(sdk=28)
 public class RetentionAndroidTest {
  @Test public void oldHistoryExpiresButTasteAndSavedSongsRemain()throws Exception{
-  Application c=RuntimeEnvironment.getApplication();OnlineStore store=new OnlineStore(c);MediaEntry song=FeatureAndroidTest.song("abcdefghijk",false);for(int i=0;i<4;i++)store.listened(song);store.toggleSaved(song);
+  Application c=RuntimeEnvironment.getApplication();OnlineStore store=new OnlineStore(c);MediaEntry song=FeatureAndroidTest.song("abcdefghijk",false);for(int i=0;i<4;i++)store.listened(song);store.toggleSaved(song);store.completedSearch(song);
   long now=System.currentTimeMillis();JSONObject old=new JSONObject().put(song.id,new JSONObject().put("plays",4).put("last",now-16L*86400000));c.getSharedPreferences("online",0).edit().putString("trackHistory",old.toString()).commit();store.prune(now);
   assertTrue(store.history().isEmpty());assertTrue(store.recent().isEmpty());assertEquals(song.id,store.speedDials(false).get(0).id);assertEquals(song.id,store.saved().get(0).id);assertEquals("Artist",store.artists().get(0));store.listened(song);assertEquals(5,store.history().get(song.id).plays());
  }
