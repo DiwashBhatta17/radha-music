@@ -36,6 +36,9 @@ jobs:
           java-version: '17'
       - uses: android-actions/setup-android@v3
         if: steps.version.outputs.exists != 'true'
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
         if: steps.version.outputs.exists != 'true'
       - name: Build and verify signed APK
