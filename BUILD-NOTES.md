@@ -35,3 +35,11 @@ Automated tests run with Robolectric API 28 and unit-level checks; no emulator o
 Install over the previous app. Play an online video, open Video quality and confirm Auto plus available resolutions. Switch between 360p/720p/1080p while watching the position and sound. Use a slower connection to exercise Auto; check portrait video too. Search and verify durations and view counts where supplied.
 
 Open Settings -> Check for updates. The first installed v1.6.0 should report current once its release is published. Later higher-version releases should offer download, then verified installation. Confirm existing library and favorites remain after updating.
+
+## Published release verification
+
+- GitHub Actions run 40097198890 completed successfully and published v1.6.0.
+- Downloaded the real release APK and verified its SHA-256 against the GitHub asset digest: `290a8380a1bd01041bde3c99f7baf9846aa1913ac530d5f82e2f3c22f2445a18`.
+- Release APK: 8,208,393 bytes; versionCode 12, versionName 1.6.0; original signing certificate verified. The delivered local APK is this verified GitHub build.
+- Release URL: https://github.com/DiwashBhatta17/radha-music/releases/tag/v1.6.0
+- The release API exposes the expected stable Radha-Music.apk name, HTTPS download URL, version tag, size and SHA-256 used by the in-app updater.

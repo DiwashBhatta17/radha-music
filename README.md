@@ -41,7 +41,7 @@ Created, designed and developed by **Diwash Bhatta**.
 ### Online Music and Watch
 
 - **Learns from listening:** Quick Picks blends your most-played artist, recent artists, and chosen preferences. Results alternate between sources and duplicate videos are removed. A listen qualifies after 30 seconds. This is an on-device taste profile with search-based discovery, not imported YouTube history or its private recommendation algorithm.
-- **One load per session:** Music and Watch preload at launch. Returning to a tab reuses shared results, including in-flight requests. Recommendations refresh on a fresh session or preference change. Page caches live in memory; cached pages render immediately and artwork requests are deduplicated. Playback uses the v1.5 buffer settings above. Server throttling or poor connections can still cause buffering.
+- **One load per session:** Music and Watch preload at launch. Returning to a tab reuses shared results, including in-flight requests. Recommendations refresh on a fresh session or preference change. Page caches live in memory; cached pages render immediately and artwork requests are deduplicated. Playback uses the v1.6 adaptive video and RAM buffer settings above. Server throttling or poor connections can still cause buffering.
 
 - **Speed Dials:** first completed explicit search selection qualifies. Home and Up next plays do not. Completion counts rank highest first with recent ties; starter suggestions are used only before any qualified songs exist. Three columns, two rows per page, up to five pages. Preferences persist locally and in backups.
 - **Quick Picks:** five song rows per horizontal page, up to five pages. The app fetches another result page when needed; fewer cards appear if the source has fewer results. **Show more** opens the full list and further pagination.
@@ -196,6 +196,8 @@ AndroidX Media3 is licensed under Apache 2.0: https://github.com/androidx/media
 Run `./gradlew testDebugUnitTest lintDebug assembleDebug` (Windows: `gradlew.bat`). Unit tests cover local music filtering, video orientation, seek and queue behavior, online ID validation, and taste ranking. Live online smoke checks require a network connection and are described in BUILD-NOTES.md. No emulator is required for building; playback, gestures and theme/layout behavior should be checked on a phone.
 
 ## GitHub release updates
+
+[Download the latest Android APK](https://github.com/DiwashBhatta17/radha-music/releases/latest/download/Radha-Music.apk). This permanent link can be shared with friends.
 
 The app checks the latest public GitHub Release when opened and from Settings -> Check for updates. It downloads the stable `Radha-Music.apk` asset through Android DownloadManager, verifies GitHub SHA-256, package identity, signing certificate and version code, and hands installation to Android. Users approve download and installation; Android may first ask to allow updates from Radha Music. The updater does not silently install applications.
 
