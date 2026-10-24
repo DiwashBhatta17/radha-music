@@ -1,40 +1,37 @@
-# Radha Music 1.5.2
+# Radha Music 1.6.0
 
 Created, designed and developed by **Diwash Bhatta**.
 
-- Version code 11; application ID `com.radha.music`; Android 8/API 26 minimum, target/compile SDK 35.
-- Built October 10, 2026 with JDK 17, Gradle 8.11.1, AGP 8.9.1 and Android Build Tools 35.0.0.
-- Final `assembleDebug`, `testDebugUnitTest`, `lintDebug`: successful. **63 tests passed**, zero failures/errors. Lint: zero errors, 43 warnings.
-- Packaged-DEX URL compatibility verification passed: unsupported Android Charset overloads are absent and replacement codecs are bundled.
-- Signature verified; unchanged certificate SHA-256: `5d51b9604140d46dc9bddc2e6e5395408d88148a8e16205e014908deb8f30d60`.
-- APK SHA-256: `57B1692974EB217EBA31E5FC3338B3DFAA8D7257717B075C4E14880A6B2A6852`.
-- Signing keys, generated builds and local SDK paths are excluded from GitHub and the source ZIP. Build caches and test dependencies remain on D:.
+- Version code 12; same application ID `com.radha.music` and signing certificate as previous releases. Android 8/API 26 minimum, compile/target SDK 35.
+- Built October 24, 2026 with JDK 17, Gradle 8.11.1 and AGP 8.9.1. Added Media3 DASH 1.8.0 and AndroidX Core 1.15.0 for adaptive playback and the installation FileProvider.
+- Local assembleDebug, testDebugUnitTest and lintDebug passed: 70 tests, zero failures/errors; lint zero errors and 45 warnings.
+- APK signing and bundled Android 11 URL codec checks passed. Certificate SHA-256: `5d51b9604140d46dc9bddc2e6e5395408d88148a8e16205e014908deb8f30d60`.
+- Locally verified APK SHA-256: `3C5A85201EEAEC91EECD3999755801BECC625198B7510E3603A1EC71E8BB7BEE`. GitHub Actions rebuilds the APK; its release asset carries its own verified digest.
 
-## Changed behavior
+## Playback and search changes
 
-- Search results and automatic playback queues are separate. Selecting a result or Home card starts the selected item; radio is fetched after playback reaches READY. Explicit playlists retain their order. Late responses for a different selection are ignored, and related entries append without overwriting manually inserted items.
-- Music uses the provider RDAMVM song-radio playlist, not its generic related-video list. Broad mood searches retain their search context. Radio filters alternate versions of the selected song, duplicate titles, covers, karaoke and reactions, and limits repeated artists. Artist search is a fallback when the provider mix is unavailable. Search results themselves remain unfiltered.
-- For you blends up to three recent learned radios with artist, mood-query and preference recommendations. Meaningful 30-second listens teach this compact on-device taste profile. Returning Home can blend it into the existing cached list; navigation does not trigger a new fetch. This is provider-assisted similarity, not guaranteed mood classification or YouTube account synchronization.
-- Speed Dials records only explicitly searched selections that reach their natural end with at least 95% unique playback coverage. One completion qualifies; higher completion counts rank first. Home, discovery chips, Up next, skips and seeking to the end do not qualify. Old play totals are not migrated because they cannot establish search origin. Starter suggestions are shown only while there are no qualifying songs.
-- Favorites, Forgotten Favorites, Listen again, artist recommendations, party/acoustic/live matches and exploration rails are conditional on available songs. No empty headings. Three-column Speed Dials and approved dark player/lyrics styling are retained.
-- Startup no longer has an Open local music link. Branding, the progress animation and creator credit remain. It waits for launch requests and Home rendering; a 90-second failure bound prevents a stalled provider from trapping users indefinitely.
-- Background playback remains opt-in. Local media, downloads, lyrics controls, credit and Android 11 URL compatibility are preserved.
+Online video now resolves an in-memory DASH manifest over the provider's original indexed AVC streams. Auto uses Media3 bandwidth adaptation with a conservative initial 1 Mbps estimate. The quality menu lists only supported resolutions actually available for the video; manual choices set a video-only track override and retain playback position and audio/subtitle selection. New videos default to Auto. Unsupported adaptive sources fall back to their original progressive source; downloaded/local files remain original files.
 
-## Verification coverage
+The player buffers upcoming media in RAM with a 48 MiB target and up to 90 seconds of media. Startup buffering is 1.5 seconds, rebuffering 3 seconds. Actual RAM use and buffered duration depend on bitrate, segment size and renderer allocations. Nothing here adds permanent media caching. Networks slower than the lowest stream or interrupted connections can still cause stalls.
 
-- Pure tests cover radio diversity, cover/version filtering without changing search results, party intent, natural completion, seek-to-end rejection, unique playback coverage and pause/resume.
-- Android tests cover search/Home/browse origin, first-completion persistence, non-qualifying legacy plays, taste persistence/reset, conditional sections, three equal-width columns, the removed startup link, queue order, lyrics availability and seek controls, dark UI, portable backups and existing local/download behavior.
-- A live desktop check searched Die with a Smile (20 results) and Indian party songs (30 results), producing 20 different-song queue entries for each. The music-radio check returned Night Changes, Perfect, Attention, Senorita and Let Me Love You after Die with a Smile. Party results included The Disco Song, Tip Tip Barsa Paani, Dilbar Dilbar and Laila Main Laila. Provider ordering and relevance can vary; these samples are not hard-coded.
-- The first live test exposed unrelated generic video recommendations. Music radio replaced that source before delivery. Native Home rendering was inspected using fixture artwork.
+Search metadata now includes duration and available view counts; unknown counts are omitted. Counts survive saved metadata and preference-radio storage. Existing dark UI, creator credit, portrait/fullscreen behavior and opt-in background playback remain.
 
-Android UI tests run through Robolectric API 28 on the desktop. No emulator or physical device was used. Live checks establish desktop provider responses, not phone-specific decoding, network latency or absence of buffering.
+A live desktop test retrieved a video with a 635-second duration and a reported 23,464,515 views. Its indexed streams offered 144p, 240p, 360p, 480p, 720p and 1080p. A live byte-range index request returned HTTP 206 and 1,508 bytes. Results are provider samples, not hard-coded data.
 
-## Phone verification
+## Update delivery
 
-Install v1.5.2 over the existing app. Search a song and let it finish normally: it should appear in Speed Dials. Playing from Home or Up next, or skipping to the end, should not add a song there. Search Die with a Smile and Indian party songs; inspect the different-song Up next queues and the next For you mix.
+The app checks the latest stable GitHub Release after startup and from Settings -> Check for updates. On approval, Android DownloadManager fetches `Radha-Music.apk`, including while the app is backgrounded. Returning to the app offers installation after checking SHA-256, file size, package ID, signing certificate and a higher installed version code. Android requires installation confirmation and may ask the user to allow installs from this source. The downloaded installer is removed once the new version is detected.
 
-Add/remove a favorite on Home and verify its section appears/disappears. Check the startup screen, three-column grid, swipe rows, lyrics tracker, portrait/landscape video and manual background playback.
+A GitHub Actions workflow builds, tests, signs and publishes app/build updates on main. Both versionCode and versionName must increase for a new release; existing release tags are skipped. The existing signing key is stored in an encrypted GitHub repository secret, never public Git. Workflow builds use that key so installs remain compatible.
 
-Use Settings -> Export backup and Import backup to transfer preferences, saved library and private downloads. Ordinary phone media must be transferred separately; local content URI entries may need re-adding after permission changes.
+Users must install v1.6.0 once to gain the updater. Older versions cannot discover updates themselves. There is no silent or remotely forced APK installation.
 
-Source: https://github.com/DiwashBhatta17/radha-music
+## Validation limits
+
+Automated tests run with Robolectric API 28 and unit-level checks; no emulator or physical phone was used. They cover DASH parsing, resolutions and byte ranges, video-only manual/Auto parameters, update version ordering, trusted assets and checksums, draft/prerelease rejection, search metadata, and existing app behavior. Live desktop extraction/index checks do not establish phone-specific decoding, measured buffering improvement or the Android install-permission experience on every device.
+
+## Phone checks
+
+Install over the previous app. Play an online video, open Video quality and confirm Auto plus available resolutions. Switch between 360p/720p/1080p while watching the position and sound. Use a slower connection to exercise Auto; check portrait video too. Search and verify durations and view counts where supplied.
+
+Open Settings -> Check for updates. The first installed v1.6.0 should report current once its release is published. Later higher-version releases should offer download, then verified installation. Confirm existing library and favorites remain after updating.

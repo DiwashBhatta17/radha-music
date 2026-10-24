@@ -8,11 +8,12 @@ import org.json.JSONObject;
 public final class MediaEntry {
     public final String id, name, folder, artist, image;
     public final boolean video;
-    public final long duration, added;
+    public final long duration, added, views;
     public MediaEntry(String id, String name, String folder, String artist, boolean video, long duration, long added) {
         this(id,name,folder,artist,video,duration,added,"");
     }
-    public MediaEntry(String id,String name,String folder,String artist,boolean video,long duration,long added,String image){this.id=id;this.name=name;this.folder=folder;this.artist=artist;this.video=video;this.duration=duration;this.added=added;this.image=image;}
+    public MediaEntry(String id,String name,String folder,String artist,boolean video,long duration,long added,String image){this(id,name,folder,artist,video,duration,added,image,-1);}
+    public MediaEntry(String id,String name,String folder,String artist,boolean video,long duration,long added,String image,long views){this.views=views;this.id=id;this.name=name;this.folder=folder;this.artist=artist;this.video=video;this.duration=duration;this.added=added;this.image=image;}
     public boolean online(){return OnlineRules.videoId(id)!=null;}
     public MediaItem item() {
         android.os.Bundle details=new android.os.Bundle();details.putLong("duration",duration);
@@ -21,8 +22,8 @@ public final class MediaEntry {
     }
     public JSONObject json() {
         JSONObject o=new JSONObject();
-        try {o.put("id",id);o.put("name",name);o.put("folder",folder);o.put("artist",artist);o.put("video",video);o.put("duration",duration);o.put("added",added);o.put("image",image);} catch(Exception ignored){}
+        try {o.put("id",id);o.put("name",name);o.put("folder",folder);o.put("artist",artist);o.put("video",video);o.put("duration",duration);o.put("added",added);o.put("image",image);o.put("views",views);} catch(Exception ignored){}
         return o;
     }
-    public static MediaEntry from(JSONObject o) {return new MediaEntry(o.optString("id"),o.optString("name"),o.optString("folder"),o.optString("artist"),o.optBoolean("video"),o.optLong("duration"),o.optLong("added"),o.optString("image"));}
+    public static MediaEntry from(JSONObject o) {return new MediaEntry(o.optString("id"),o.optString("name"),o.optString("folder"),o.optString("artist"),o.optBoolean("video"),o.optLong("duration"),o.optLong("added"),o.optString("image"),o.optLong("views",-1));}
 }

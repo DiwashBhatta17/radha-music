@@ -2,6 +2,13 @@
 
 Created, designed and developed by **Diwash Bhatta**.
 
+## Version 1.6.0 — adaptive video and in-app updates
+
+- Online videos start in Auto quality. DASH switches between the available original resolutions using measured bandwidth; the player also offers explicit 144p/240p/360p/480p/720p/1080p choices when the source provides them. Portrait and local files retain their original dimensions. Manual quality changes preserve playback position and audio/subtitle selections.
+- Upcoming segments are buffered in RAM: up to 90 seconds, with a 48 MiB target and a conservative initial bandwidth estimate. The buffer starts playback after 1.5 seconds and targets 3 seconds after a stall. Actual buffered time depends on bitrate and connection; this is not a permanent video download or a guarantee against network outages.
+- Search rows show duration and provider-reported view counts. Unknown view counts are omitted rather than invented; saved metadata preserves available counts.
+- GitHub Releases update checks, background APK downloads and verified Android installation are available. The first updater-enabled APK must be installed once; see GitHub release updates below.
+
 ## Version 1.5.2 — related radio and personal discovery
 
 - Selecting an online search result or Home card starts that track immediately, then builds Up next separately. Song searches keep their matching versions; automatic queues filter repeat versions, covers, karaoke and reactions, and limit repeated artists. Home no longer queues the entire fetched catalog. Explicit saved playlists still use their chosen order.
@@ -187,3 +194,13 @@ AndroidX Media3 is licensed under Apache 2.0: https://github.com/androidx/media
 ## Validation
 
 Run `./gradlew testDebugUnitTest lintDebug assembleDebug` (Windows: `gradlew.bat`). Unit tests cover local music filtering, video orientation, seek and queue behavior, online ID validation, and taste ranking. Live online smoke checks require a network connection and are described in BUILD-NOTES.md. No emulator is required for building; playback, gestures and theme/layout behavior should be checked on a phone.
+
+## GitHub release updates
+
+The app checks the latest public GitHub Release when opened and from Settings -> Check for updates. It downloads the stable `Radha-Music.apk` asset through Android DownloadManager, verifies GitHub SHA-256, package identity, signing certificate and version code, and hands installation to Android. Users approve download and installation; Android may first ask to allow updates from Radha Music. The updater does not silently install applications.
+
+Install v1.6.0 once to enable this feature. Earlier APKs have no updater and cannot receive their first update automatically.
+
+The `Publish Android update` GitHub Actions workflow runs on app/build changes pushed to main, or manually. It builds and tests the app using the existing signing key in the encrypted `RADHA_SIGNING_KEYSTORE_B64` repository secret, then publishes a release with `Radha-Music.apk`. No signing key is committed to Git.
+
+For each new release, increase **both** `versionCode` and `versionName` in `app/build.gradle`. An already-published version tag is skipped. Documentation-only commits do not generate an update, and failing builds do not publish APKs. Keep the signing secret unchanged so existing installations can update.

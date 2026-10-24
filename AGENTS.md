@@ -7,3 +7,4 @@
 - Keep the visible credit: “Created, designed and developed by Diwash Bhatta”.
 - Background playback must remain opt-in; preserve the original local media files.
 - Commit as Diwash Bhatta <84887439+DiwashBhatta17@users.noreply.github.com> for both author and committer. This is the user-requested GitHub identity; do not override it with Codex or codex@localhost.
+- For app updates, increment both versionCode and versionName. Push the tested changes to main and verify the Publish Android update workflow publishes a signed GitHub Release with Radha-Music.apk. Keep the existing encrypted signing secret; never add signing material to Git.

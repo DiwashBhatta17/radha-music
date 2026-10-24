@@ -1,0 +1,67 @@
+name: Publish Android update
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'gradle/**', 'gradlew*', '*.gradle', 'gradle.properties', '.github/workflows/android-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read version and check published release
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import re, os
+          source=open('app/build.gradle').read()
+          version=re.search(r"versionName '([^']+)'",source).group(1)
+          code=re.search(r'versionCode (\d+)',source).group(1)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+            out.write(f'tag=v{version}\ncode={code}\n')
+          PY
+          tag=$(sed -n "s/.*versionName '\([^']*\)'.*/v\1/p" app/build.gradle)
+          if gh release view "$tag" >/dev/null 2>&1; then echo 'exists=true' >> "$GITHUB_OUTPUT"; else echo 'exists=false' >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/setup-java@v4
+        if: steps.version.outputs.exists != 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        if: steps.version.outputs.exists != 'true'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.version.outputs.exists != 'true'
+      - name: Build and verify signed APK
+        if: steps.version.outputs.exists != 'true'
+        env:
+          RADHA_KEYSTORE: ${{ secrets.RADHA_SIGNING_KEYSTORE_B64 }}
+        run: |
+          test -n "$RADHA_KEYSTORE"
+          mkdir -p .local
+          printf '%s' "$RADHA_KEYSTORE" | base64 --decode > .local/debug.keystore
+          chmod 600 .local/debug.keystore
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug testDebugUnitTest lintDebug
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify app/build/outputs/apk/debug/app-debug.apk
+          java tools/VerifyUrlCodecCompat.java app/build/outputs/apk/debug/app-debug.apk
+          cp app/build/outputs/apk/debug/app-debug.apk Radha-Music.apk
+      - name: Publish installable update
+        if: steps.version.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          printf 'Version code: %s\n\nSigned Radha Music update. Install over the existing app to keep your library and preferences. Android asks for installation confirmation.\n' "$VERSION_CODE" > release-notes.txt
+          gh release create "$RELEASE_TAG" Radha-Music.apk --target "$GITHUB_SHA" --title "Radha Music $RELEASE_TAG" --notes-file release-notes.txt --generate-notes --latest
+      - name: Remove signing material
+        if: always()
+        run: rm -f .local/debug.keystore

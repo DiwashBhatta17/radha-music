@@ -65,14 +65,14 @@ public final class PlaybackService extends MediaSessionService {
                 if(generation!=radioGeneration||player==null||player.getCurrentMediaItem()==null||!seed.id.equals(player.getCurrentMediaItem().mediaId))return;
                 java.util.Set<String> ids=new java.util.HashSet<>();for(int i=0;i<player.getMediaItemCount();i++)ids.add(OnlineRules.videoId(player.getMediaItemAt(i).mediaId));
                 java.util.List<MediaEntry> entries=new java.util.ArrayList<>();java.util.List<MediaItem> items=new java.util.ArrayList<>();
-                for(OnlineClient.Track track:ready)if(ids.add(OnlineRules.videoId(track.url()))){MediaEntry entry=new MediaEntry(OnlineRules.mediaId(track.url(),seed.video),track.name(),"YouTube",track.artist(),seed.video,track.seconds()*1000,System.currentTimeMillis()/1000,track.image());entries.add(entry);items.add(entry.item());}
+                for(OnlineClient.Track track:ready)if(ids.add(OnlineRules.videoId(track.url()))){MediaEntry entry=new MediaEntry(OnlineRules.mediaId(track.url(),seed.video),track.name(),"YouTube",track.artist(),seed.video,track.seconds()*1000,System.currentTimeMillis()/1000,track.image(),track.views());entries.add(entry);items.add(entry.item());}
                 radioEntries=entries;if(listenedSeconds>=30)onlineHistory.learnRadio(seed,entries);onlineHistory.remember(entries);player.addMediaItems(items);
             });
         });
     }
     @Override public void onCreate() {
         super.onCreate(); instance=this;history=new LibraryStore(this);onlineHistory=new OnlineStore(this);
-        player=new ExoPlayer.Builder(this).setLoadControl(new androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(15000,60000,750,1500).setTargetBufferBytes(64*1024*1024).setPrioritizeTimeOverSizeThresholds(false).build()).setMediaSourceFactory(new OnlineMediaSourceFactory(this)).setSeekBackIncrementMs(6000).setSeekForwardIncrementMs(6000).build();
+        player=new ExoPlayer.Builder(this).setBandwidthMeter(new androidx.media3.exoplayer.upstream.DefaultBandwidthMeter.Builder(this).setInitialBitrateEstimate(1000000).build()).setLoadControl(new androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(20000,90000,1500,3000).setTargetBufferBytes(48*1024*1024).setPrioritizeTimeOverSizeThresholds(false).build()).setMediaSourceFactory(new OnlineMediaSourceFactory(this)).setSeekBackIncrementMs(6000).setSeekForwardIncrementMs(6000).build();
         player.setAudioAttributes(new AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(),true);
         player.setHandleAudioBecomingNoisy(true);
         player.setWakeMode(C.WAKE_MODE_NETWORK);
@@ -83,7 +83,7 @@ public final class PlaybackService extends MediaSessionService {
             }
             @Override public void onPlaybackStateChanged(int state){if(state==Player.STATE_ENDED)finishSearch(player.getCurrentPosition());if(state==Player.STATE_READY){if(player.getDuration()>0)listeningDuration=player.getDuration();requestRadio();}}
             @Override public void onIsPlayingChanged(boolean playing){if(completion!=null){completion.position(player.getCurrentPosition(),true);if(!playing)completion.discontinuity();}}
-            @Override public void onMediaItemTransition(MediaItem item,int reason){listenedSeconds=0;radioGeneration++;radioSeed=null;radioQuery="";radioEntries=java.util.Collections.emptyList();radioRequested=false;selectedSearch=null;completion=null;}
+            @Override public void onMediaItemTransition(MediaItem item,int reason){player.setTrackSelectionParameters(player.getTrackSelectionParameters().buildUpon().clearOverridesOfType(C.TRACK_TYPE_VIDEO).build());listenedSeconds=0;radioGeneration++;radioSeed=null;radioQuery="";radioEntries=java.util.Collections.emptyList();radioRequested=false;selectedSearch=null;completion=null;}
             @Override public void onAudioSessionIdChanged(int id){attachEnhancer(id);}
             @Override public void onRenderedFirstFrame(){markCurrentPlayed();}
             @Override public void onEvents(Player p,Player.Events events){if(background&&p.isPlaying())markCurrentPlayed();}

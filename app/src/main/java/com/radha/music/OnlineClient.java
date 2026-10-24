@@ -13,9 +13,9 @@ import java.util.*;
 
 /** Public, unauthenticated extraction only. No Google credentials or downloaded media. */
 public final class OnlineClient {
-    public record Track(String url,String name,String artist,String image,long seconds) {}
+    public record Track(String url,String name,String artist,String image,long seconds,long views) {public Track(String url,String name,String artist,String image,long seconds){this(url,name,artist,image,seconds,-1);}}
     public record Results(List<Track> tracks,SearchQueryHandler query,Page next,boolean fallback) {}
-    public record Streams(String audio,String video,String muxed,long created) {}
+    public record Streams(String audio,String video,String muxed,long created,String dash) {public Streams(String audio,String video,String muxed,long created){this(audio,video,muxed,created,null);}}
     private record Radio(List<Track> tracks,long created){}
     private static final Map<String,Radio> musicRadios=new LinkedHashMap<>();
     public static List<Track> musicRadio(String id)throws IOException{
@@ -56,7 +56,7 @@ public final class OnlineClient {
         List<Track> result=new ArrayList<>();Set<String> ids=new HashSet<>();
         for(InfoItem item:items)if(item instanceof StreamInfoItem s&&s.getStreamType()!=StreamType.LIVE_STREAM&&s.getStreamType()!=StreamType.POST_LIVE_STREAM&&OnlineRules.videoId(s.getUrl())!=null&&ids.add(s.getUrl())){
             String image=s.getThumbnails().isEmpty()?"":s.getThumbnails().get(s.getThumbnails().size()-1).getUrl();
-            result.add(new Track(s.getUrl(),s.getName(),s.getUploaderName(),image,Math.max(0,s.getDuration())));
+            result.add(new Track(s.getUrl(),s.getName(),s.getUploaderName(),image,Math.max(0,s.getDuration()),s.getViewCount()));
         }
         return result;
     }
@@ -75,7 +75,7 @@ public final class OnlineClient {
                 .max(Comparator.comparingInt(AudioStream::getAverageBitrate)).orElse(null);
             VideoStream video=bestVideo(info.getVideoOnlyStreams()),muxed=bestVideo(info.getVideoStreams());
             if(audio==null&&muxed==null)throw new IOException("No playable stream is currently available");
-            Streams result=new Streams(audio==null?null:audio.getContent(),video==null?null:video.getContent(),muxed==null?null:muxed.getContent(),System.currentTimeMillis());
+            Streams result=new Streams(audio==null?null:audio.getContent(),video==null?null:video.getContent(),muxed==null?null:muxed.getContent(),System.currentTimeMillis(),AdaptiveManifest.from(info.getVideoOnlyStreams(),info.getDuration()));
             synchronized(OnlineClient.class){if(cache.size()>=24){String oldest=cache.keySet().iterator().next();cache.remove(oldest);related.remove(oldest);}cache.put(key,result);related.put(key,tracks(info.getRelatedItems()));}return result;
         }catch(Exception|LinkageError e){if(e instanceof InterruptedException)Thread.currentThread().interrupt();throw new IOException("YouTube could not provide this stream. Retry later or open it in YouTube.",e);}
     }

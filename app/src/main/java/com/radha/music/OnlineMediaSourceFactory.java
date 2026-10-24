@@ -15,9 +15,10 @@ public final class OnlineMediaSourceFactory implements MediaSource.Factory {
     private final DefaultMediaSourceFactory local;
     private final ProgressiveMediaSource.Factory online;
     private final DownloadStore downloads;
+    private final DefaultHttpDataSource.Factory http;
     public OnlineMediaSourceFactory(Context context){
         downloads=new DownloadStore(context);
-        DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory().setUserAgent("Mozilla/5.0").setConnectTimeoutMs(15000).setReadTimeoutMs(20000);
+        http=new DefaultHttpDataSource.Factory().setUserAgent("Mozilla/5.0").setConnectTimeoutMs(15000).setReadTimeoutMs(20000);
         local=new DefaultMediaSourceFactory(context);
         ResolvingDataSource.Factory resolving=new ResolvingDataSource.Factory(http,spec->{
             String value=spec.uri.toString();if(!"radha".equals(spec.uri.getScheme()))return spec;
@@ -39,7 +40,7 @@ public final class OnlineMediaSourceFactory implements MediaSource.Factory {
         if(!item.mediaId.endsWith("/video"))return online.createMediaSource(item);
         String audioId=item.mediaId.substring(0,item.mediaId.length()-5)+"audio";
         MediaItem audio=item.buildUpon().setUri(audioId).build();
-        return new MergingMediaSource(true,online.createMediaSource(item),online.createMediaSource(audio));
+        return new AdaptiveVideoSource(item,audio,online,http);
     }
     @Override public int[] getSupportedTypes(){return local.getSupportedTypes();}
     @Override public MediaSource.Factory setDrmSessionManagerProvider(DrmSessionManagerProvider provider){local.setDrmSessionManagerProvider(provider);online.setDrmSessionManagerProvider(provider);return this;}
